@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { jwtSecret, jwtExpiresIn } = require('../config');
 
-exports.signup = async (req, res) => {
+const signup = async (req, res) => {
   try {
     const { user_id, username, password } = req.body;
     if (!user_id || !username || !password) {
@@ -24,7 +24,7 @@ exports.signup = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { user_id, password } = req.body;
     if (!user_id || !password) {
@@ -48,3 +48,5 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "서버 오류", error });
   }
 };
+
+module.exports = { signup, login };
