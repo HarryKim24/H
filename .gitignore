@@ -1,0 +1,22 @@
+# Node.js 관련
+node_modules/
+.env
+npm-debug.log
+yarn-error.log
+
+# Logs
+logs/
+*.log
+debug.log
+error.log
+
+# Editor 관련
+.vscode/
+.idea/
+.DS_Store
+
+# Build 관련
+client/dist/
+server/dist/
+client/.vite/
+server/.cache/
