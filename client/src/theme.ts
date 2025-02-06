@@ -17,6 +17,15 @@ export const lightTheme = createTheme({
       primary: "#212121",
       secondary: "#424242",
     },
+    warning: {
+      main: "#ffa726"
+    },
+    error: {
+      main: "#d32f2f"
+    },
+    success: {
+      main: "#388e3c"
+    },
   },
   typography: {
     fontFamily: `"Roboto", "Arial", sans-serif`,
@@ -80,6 +89,15 @@ export const darkTheme = createTheme({
     text: {
       primary: "#e0e0e0",
       secondary: "#bdbdbd",
+    },
+    warning: {
+      main: "#FF9800"
+    },
+    error: {
+      main: "#F44336"
+    },
+    success: {
+      main: "#4CAF50"
     },
   },
   typography: {
