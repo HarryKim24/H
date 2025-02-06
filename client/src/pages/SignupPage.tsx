@@ -71,12 +71,21 @@ const SignupPage = () => {
           </Button>
         </form>
 
-        <Button fullWidth onClick={() => navigate("/login")} sx={{ mt: 2 }}>
+        <Typography 
+          onClick={() => navigate("/login")} 
+          sx={{ 
+            mt: 2, 
+            cursor: "pointer", 
+            textDecoration: "none", 
+            color: "primary.main",
+            "&:hover": { textDecoration: "underline" } 
+          }}
+        >
           로그인 페이지로 이동
-        </Button>
+        </Typography>
       </Box>
     </Container>
   )
 }
 
-export default SignupPage
+export default SignupPage;
