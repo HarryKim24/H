@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
   Container, Typography, CircularProgress, Button, Box, Divider, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
-  useTheme
+  useTheme, Card, CardMedia 
 } from "@mui/material";
 import { ThumbUp, ThumbDown, Edit, Delete } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
@@ -12,6 +12,7 @@ interface Post {
   _id: string;
   title: string;
   content: string;
+  imageUrl?: string;
   author: {
     username: string;
     _id: string;
@@ -69,6 +70,18 @@ const PostDetailPage = () => {
       <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
         {post.title}
       </Typography>
+
+      {post.imageUrl && (
+        <Card sx={{ maxWidth: "100%", mb: 2 }}>
+          <CardMedia
+            component="img"
+            height="300"
+            image={post.imageUrl}
+            alt="게시글 이미지"
+            sx={{ objectFit: "cover" }}
+          />
+        </Card>
+      )}
 
       <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
         {post.content}
