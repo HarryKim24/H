@@ -38,42 +38,10 @@ const PostDetailPage = () => {
     };
 
     fetchPost();
-  }, [postId]);
-
-  const handleLike = async () => {
-    if (!token || !user) {
-      alert("로그인 후 이용 가능합니다.");
-      return;
-    }
-
-    try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/like`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPost((prev) => prev ? { ...prev, likes: [...prev.likes, user.user_id] } : prev);
-    } catch (err) {
-      console.error("좋아요 실패:", err);
-    }
-  };
-
-  const handleDislike = async () => {
-    if (!token || !user) {
-      alert("로그인 후 이용 가능합니다.");
-      return;
-    }
-
-    try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/dislike`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPost((prev) => prev ? { ...prev, dislikes: [...prev.dislikes, user.user_id] } : prev);
-    } catch (err) {
-      console.error("싫어요 실패:", err);
-    }
-  };
+  }, [postId, user]);
 
   const handleDelete = async () => {
-    if (!token || !post || !user || post.author._id !== user.user_id) {
+    if (!token || !post || !user || String(post.author._id) !== String(user.id)) {
       alert("삭제 권한이 없습니다.");
       return;
     }
@@ -111,7 +79,7 @@ const PostDetailPage = () => {
           </Typography>
         </Box>
 
-        {token && user && post.author._id === user.user_id && (
+        {token && user && String(post.author._id) === String(user.id) && ( 
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton color="primary" onClick={() => navigate(`/edit/${postId}`)}>
               <Edit />
@@ -124,10 +92,10 @@ const PostDetailPage = () => {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <Button startIcon={<ThumbUp />} onClick={handleLike}>
+        <Button startIcon={<ThumbUp />}>
           좋아요 {post.likes.length}
         </Button>
-        <Button startIcon={<ThumbDown />} onClick={handleDislike}>
+        <Button startIcon={<ThumbDown />}>
           싫어요 {post.dislikes.length}
         </Button>
       </Box>

@@ -4,7 +4,7 @@ import axios from "axios";
 
 interface AuthState {
   token: string | null;
-  user: { user_id: string; username: string } | null;
+  user: { id: string, user_id: string; username: string } | null;
   login: (user_id: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
