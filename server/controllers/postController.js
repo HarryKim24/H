@@ -73,4 +73,49 @@ const getPostDetail = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getPosts, getPostDetail };
+const updatePost = async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const post = await Post.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+    }
+
+    if (post.author.toString() !== req.user.id) {
+      return res.status(403).json({ message: "수정 권한이 없습니다." });
+    }
+
+    post.title = title || post.title;
+    post.content = content || post.content;
+
+    await post.save();
+    res.json({ message: "게시글이 수정되었습니다.", post });
+  } catch (error) {
+    console.error("게시글 수정 오류:", error);
+    res.status(500).json({ message: "서버 오류", error });
+  }
+};
+
+const deletePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+    }
+
+    if (post.author.toString() !== req.user.id) {
+      return res.status(403).json({ message: "삭제 권한이 없습니다." });
+    }
+
+    await post.deleteOne();
+    res.json({ message: "게시글이 삭제되었습니다." });
+  } catch (error) {
+    console.error("게시글 삭제 오류:", error);
+    res.status(500).json({ message: "서버 오류", error });
+  }
+};
+
+
+module.exports = { createPost, getPosts, getPostDetail, updatePost, deletePost };
