@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Container, Typography, CircularProgress, Button, Box, Divider, IconButton } from "@mui/material";
+import { 
+  Container, Typography, CircularProgress, Button, Box, Divider, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
+  useTheme, Card, CardMedia 
+} from "@mui/material";
 import { ThumbUp, ThumbDown, Edit, Delete } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 
@@ -9,6 +12,7 @@ interface Post {
   _id: string;
   title: string;
   content: string;
+  imageUrl?: string;
   author: {
     username: string;
     _id: string;
@@ -24,6 +28,8 @@ const PostDetailPage = () => {
   const { token, user } = useAuthStore();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -65,6 +71,18 @@ const PostDetailPage = () => {
         {post.title}
       </Typography>
 
+      {post.imageUrl && (
+        <Card sx={{ maxWidth: "100%", mb: 2 }}>
+          <CardMedia
+            component="img"
+            height="300"
+            image={post.imageUrl}
+            alt="게시글 이미지"
+            sx={{ objectFit: "cover" }}
+          />
+        </Card>
+      )}
+
       <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
         {post.content}
       </Typography>
@@ -81,10 +99,10 @@ const PostDetailPage = () => {
 
         {token && user && String(post.author._id) === String(user.id) && ( 
           <Box sx={{ display: "flex", gap: 1 }}>
-            <IconButton color="primary" onClick={() => navigate(`/edit/${postId}`)}>
+            <IconButton color="primary" onClick={() => navigate(`/posts/${postId}/edit`)}>
               <Edit />
             </IconButton>
-            <IconButton color="error" onClick={handleDelete}>
+            <IconButton color="error" onClick={() => setOpenDialog(true)}>
               <Delete />
             </IconButton>
           </Box>
@@ -99,6 +117,29 @@ const PostDetailPage = () => {
           싫어요 {post.dislikes.length}
         </Button>
       </Box>
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle sx={{ color: theme.palette.warning.main }}>
+          게시글 삭제
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            해당 게시글을 삭제하시겠습니까?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} autoFocus
+            sx={{ backgroundColor: theme.palette.background.paper, color: theme.palette.primary.main }}
+          >
+            취소
+          </Button>
+          <Button onClick={handleDelete}
+            sx={{ backgroundColor: theme.palette.background.paper, color: theme.palette.error.main }}
+          >
+            삭제
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
