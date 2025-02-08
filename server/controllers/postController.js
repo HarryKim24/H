@@ -55,4 +55,22 @@ const getPosts = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getPosts };
+const getPostDetail = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.postId)
+      .populate('author', 'username')
+      .populate('likes', '_id')
+      .populate('dislikes', '_id');
+
+    if (!post) {
+      return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
+    }
+
+    res.json(post);
+  } catch (error) {
+    console.error("게시글 조회 오류:", error);
+    res.status(500).json({ message: "서버 오류", error });
+  }
+};
+
+module.exports = { createPost, getPosts, getPostDetail };
