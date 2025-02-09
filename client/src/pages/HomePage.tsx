@@ -69,7 +69,7 @@ const HomePage = () => {
         >
           <CardContent sx={{ p: 1, pl: 1.5, pr: 1.5, paddingBottom: "8px !important" }}>
             <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              {post.title}
+              {post.title.length > 50 ? post.title.substring(0, 50) + "..." : post.title}
             </Typography>
 
             <Typography variant="body1" sx={{ color: "text.secondary" }}>

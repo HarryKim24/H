@@ -67,7 +67,10 @@ const PostDetailPage = () => {
 
   return (
     <Container sx={{ pt: 2, pb: 4 }}>
-      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
+      <Typography 
+        variant="h4" 
+        sx={{ fontWeight: "bold", mb: 2, wordBreak: "break-word" }}
+      >
         {post.title}
       </Typography>
 
@@ -85,7 +88,10 @@ const PostDetailPage = () => {
         </Box>
       )}
       
-      <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
+      <Typography 
+        variant="body1" 
+        sx={{ color: "text.secondary", mb: 3, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+      >
         {post.content}
       </Typography>
 
