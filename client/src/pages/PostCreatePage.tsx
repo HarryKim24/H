@@ -60,7 +60,7 @@ const PostCreatePage = () => {
   };
 
   return (
-    <Container sx={{ pt: 2 }}>
+    <Container sx={{ pt: 2, pb: 4 }}>
       <Typography variant="h5" sx={{ fontWeight: "bold" }}>새 게시글 작성</Typography>
 
       {error && (
@@ -74,7 +74,7 @@ const PostCreatePage = () => {
 
       {preview && (
         <Box sx={{ mt: 2, textAlign: "center" }}>
-          <img src={preview} alt="미리보기" style={{ width: "300px", height: "auto" }} />
+          <img src={preview} alt="미리보기" style={{ maxHeight: "500px" }} />
         </Box>
       )}
       
