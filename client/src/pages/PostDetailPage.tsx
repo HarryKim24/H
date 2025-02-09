@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
   Container, Typography, CircularProgress, Button, Box, Divider, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
-  useTheme, Card, CardMedia 
+  useTheme,
 } from "@mui/material";
 import { ThumbUp, ThumbDown, Edit, Delete } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
@@ -66,24 +66,32 @@ const PostDetailPage = () => {
   if (!post) return <Typography sx={{ textAlign: "center", mt: 5 }}>게시글을 찾을 수 없습니다.</Typography>;
 
   return (
-    <Container sx={{ pt: 2 }}>
-      <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
+    <Container sx={{ pt: 2, pb: 4 }}>
+      <Typography 
+        variant="h4" 
+        sx={{ fontWeight: "bold", mb: 2, wordBreak: "break-word" }}
+      >
         {post.title}
       </Typography>
 
       {post.imageUrl && (
-        <Card sx={{ maxWidth: "100%", mb: 2 }}>
-          <CardMedia
-            component="img"
-            height="300"
-            image={post.imageUrl}
-            alt="게시글 이미지"
-            sx={{ objectFit: "cover" }}
+        <Box sx={{ mb: 2 }}>
+          <img 
+            src={post.imageUrl} 
+            alt="게시글 이미지" 
+            style={{ 
+              maxWidth: "100%",
+              maxHeight: "500px",
+              objectFit: "contain"
+            }} 
           />
-        </Card>
+        </Box>
       )}
-
-      <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
+      
+      <Typography 
+        variant="body1" 
+        sx={{ color: "text.secondary", mb: 3, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+      >
         {post.content}
       </Typography>
 

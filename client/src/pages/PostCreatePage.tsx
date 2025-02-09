@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Container, TextField, Button, Typography, CircularProgress, Alert, Box } from "@mui/material";
+import { Container, TextField, Button, Typography, Alert, Box, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../context/authStore";
+import { Delete } from "@mui/icons-material";
 
 const PostCreatePage = () => {
   const navigate = useNavigate();
@@ -27,6 +28,11 @@ const PostCreatePage = () => {
       setImage(file);
       setPreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleDeleteImage = () => {
+    setImage(null);
+    setPreview(null);
   };
 
   const handleSubmit = async () => {
@@ -60,7 +66,7 @@ const PostCreatePage = () => {
   };
 
   return (
-    <Container sx={{ pt: 2 }}>
+    <Container sx={{ pt: 2, pb: 4 }}>
       <Typography variant="h5" sx={{ fontWeight: "bold" }}>새 게시글 작성</Typography>
 
       {error && (
@@ -73,21 +79,34 @@ const PostCreatePage = () => {
       <TextField label="내용" fullWidth margin="normal" multiline rows={4} value={content} onChange={(e) => setContent(e.target.value)} />
 
       {preview && (
-        <Box sx={{ mt: 2, textAlign: "center" }}>
-          <img src={preview} alt="미리보기" style={{ width: "300px", height: "auto" }} />
+        <Box sx={{ position: "relative", textAlign: "center", mt: 2 }}>
+          <img
+            src={preview}
+            alt="미리보기"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "500px",
+              objectFit: "contain",
+            }}
+          />
         </Box>
       )}
-      
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
-        <Box>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-        </Box>
 
-        <Button variant="contained" onClick={handleSubmit} disabled={loading}>
-          {loading ? <CircularProgress size={24} color="inherit" /> : "작성하기"}
-        </Button>
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <input type="file" accept="image/*" onChange={handleImageChange} />
+
+        {preview && (
+          <IconButton sx={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={handleDeleteImage}>
+            <Delete sx={{ color: "white" }} />
+          </IconButton>
+        )}
       </Box>
 
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+        <Button variant="contained" onClick={handleSubmit} disabled={loading}>
+          {loading ? "작성 중..." : "작성하기"}
+        </Button>
+      </Box>
     </Container>
   );
 };

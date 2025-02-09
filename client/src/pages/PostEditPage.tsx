@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Container, TextField, Button, Typography, Alert, Box, Card, CardMedia, IconButton } from "@mui/material";
+import { Container, TextField, Button, Typography, Alert, Box, IconButton } from "@mui/material";
 import { useAuthStore } from "../context/authStore";
 import { Delete } from "@mui/icons-material";
 
@@ -89,7 +89,7 @@ const PostEditPage = () => {
   };
 
   return (
-    <Container sx={{ pt: 2 }}>
+    <Container sx={{ pt: 2, pb: 4 }}>
       <Typography variant="h5">게시글 수정</Typography>
 
       {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
@@ -112,32 +112,37 @@ const PostEditPage = () => {
       />
 
       {preview && (
-        <Box sx={{ position: "relative", mt: 2 }}>
-          <Card sx={{ maxWidth: "100%" }}>
-            <CardMedia
-              component="img"
-              height="200"
-              image={preview}
-              alt="게시글 이미지"
-              sx={{ objectFit: "cover" }}
-            />
-          </Card>
+        <Box sx={{ position: "relative", textAlign: "center", mt: 2 }}>
+          <img
+            src={preview}
+            alt="게시글 이미지"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "500px",
+              objectFit: "contain",
+            }}
+          />
+        </Box>
+      )}
+
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <input type="file" accept="image/*" onChange={handleImageChange} />
+
+        {preview && (
           <IconButton 
-            sx={{ position: "absolute", top: 8, right: 8, backgroundColor: "rgba(0,0,0,0.6)" }}
+            sx={{ backgroundColor: "rgba(0,0,0,0.6)" }}
             onClick={handleDeleteImage}
           >
             <Delete sx={{ color: "white" }} />
           </IconButton>
-        </Box>
-      )}
-
-      <Box sx={{ mt: 2 }}>
-        <input type="file" accept="image/*" onChange={handleImageChange} />
+        )}
       </Box>
 
-      <Button variant="contained" onClick={handleUpdate} sx={{ mt: 2 }}>
-        수정하기
-      </Button>
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+        <Button variant="contained" onClick={handleUpdate}>
+          수정하기
+        </Button>
+      </Box>
     </Container>
   );
 };
