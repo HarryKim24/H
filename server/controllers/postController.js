@@ -84,18 +84,20 @@ const createPost = async (req, res) => {
 const getPosts = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
+    const totalPosts = await Post.countDocuments();
     const posts = await Post.find()
       .populate('author', 'username')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(Number(limit));
 
-    res.json(posts);
+    res.json({ posts, totalPosts });
   } catch (error) {
     console.error("게시글 목록 불러오기 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
   }
 };
+
 
 const getPostDetail = async (req, res) => {
   try {

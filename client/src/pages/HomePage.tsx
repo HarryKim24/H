@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Container, Card, CardContent, Typography, CircularProgress, Button, Box, Divider } from "@mui/material";
+import { Container, Card, CardContent, Typography, CircularProgress, Button, Box, Divider, Pagination } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
@@ -22,13 +22,20 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const { token, user } = useAuthStore();
+  const limit = 10;
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get<Post[]>(`${import.meta.env.VITE_API_BASE_URL}/posts`);
-        setPosts(res.data);
+        setLoading(true);
+        const res = await axios.get<{ posts: Post[]; totalPosts: number }>(
+          `${import.meta.env.VITE_API_BASE_URL}/posts?page=${currentPage}&limit=${limit}`
+        );
+        setPosts(res.data.posts);
+        setTotalPages(Math.ceil(res.data.totalPosts / limit));
       } catch (err) {
         console.error("게시글 불러오기 실패:", err);
       } finally {
@@ -37,16 +44,16 @@ const HomePage = () => {
     };
 
     fetchPosts();
-  }, []);
+  }, [currentPage]);
 
   const handleCreatePost = async () => {
     if (!token || !user) {
       alert("로그인 후 이용 가능합니다.");
       navigate('/login');
       return;
-    } 
+    }
     navigate('/create');
-  }
+  };
 
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 5 }} />;
 
@@ -68,11 +75,11 @@ const HomePage = () => {
           onClick={() => navigate(`/posts/${post._id}`)}
         >
           <CardContent sx={{ p: 1, pl: 1.5, pr: 1.5, paddingBottom: "8px !important" }}>
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+            <Typography variant="h6" sx={{ fontWeight: "bold", wordBreak: "break-word" }}>
               {post.title.length > 50 ? post.title.substring(0, 50) + "..." : post.title}
             </Typography>
 
-            <Typography variant="body1" sx={{ color: "text.secondary" }}>
+            <Typography variant="body1" sx={{ color: "text.secondary", wordBreak: "break-word" }}>
               {post.content.length > 100 ? post.content.substring(0, 100) + "..." : post.content}
             </Typography>
 
@@ -98,6 +105,15 @@ const HomePage = () => {
           </CardContent>
         </Card>
       ))}
+
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+        <Pagination 
+          count={totalPages} 
+          page={currentPage} 
+          onChange={(_, page) => setCurrentPage(page)}
+          color="primary"
+        />
+      </Box>
     </Container>
   );
 };
