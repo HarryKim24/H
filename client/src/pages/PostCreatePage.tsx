@@ -14,6 +14,8 @@ const PostCreatePage = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [titleError, setTitleError] = useState(false);
+  const [contentError, setContentError] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -38,6 +40,15 @@ const PostCreatePage = () => {
   const handleSubmit = async () => {
     if (!token) {
       console.error("로그인 후 다시 시도하세요.");
+      return;
+    }
+
+    if (!title.trim()) {
+      setTitleError(true);
+      return;
+    }
+    if (!content.trim()) {
+      setContentError(true);
       return;
     }
 
@@ -75,8 +86,33 @@ const PostCreatePage = () => {
         </Alert>
       )}
 
-      <TextField label="제목" fullWidth margin="normal" value={title} onChange={(e) => setTitle(e.target.value)} />
-      <TextField label="내용" fullWidth margin="normal" multiline rows={4} value={content} onChange={(e) => setContent(e.target.value)} />
+      <TextField
+        label="제목"
+        fullWidth
+        margin="normal"
+        value={title}
+        onChange={(e) => {
+          setTitle(e.target.value);
+          if (titleError) setTitleError(false);
+        }}
+        error={titleError}
+        helperText={titleError ? "제목을 입력해 주세요." : ""}
+      />
+      
+      <TextField
+        label="내용"
+        fullWidth
+        margin="normal"
+        multiline
+        rows={4}
+        value={content}
+        onChange={(e) => {
+          setContent(e.target.value);
+          if (contentError) setContentError(false);
+        }}
+        error={contentError}
+        helperText={contentError ? "내용을 입력해 주세요." : ""}
+      />
 
       {preview && (
         <Box sx={{ position: "relative", textAlign: "center", mt: 2 }}>
