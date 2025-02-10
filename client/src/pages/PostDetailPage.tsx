@@ -175,14 +175,15 @@ const PostDetailPage = () => {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-      <Button
+        <Button
           startIcon={<ThumbUp />}
           onClick={handleLike}
           sx={{
-            backgroundColor: theme.palette.like.main,
-            color: "#ffffff",
+            backgroundColor: post.likes.includes(user?.id ?? "") ? theme.palette.like.main : "transparent",
+            border: `2px solid ${theme.palette.like.main}`,
+            color: post.likes.includes(user?.id ?? "") ? "#ffffff" : theme.palette.like.main,
             "&:hover": {
-              backgroundColor: theme.palette.like.dark || "#d32f2f",
+              backgroundColor: post.likes.includes(user?.id ?? "") ? theme.palette.like.dark || "#d32f2f" : "rgba(229, 57, 53, 0.1)",
             },
           }}
         >
@@ -193,10 +194,11 @@ const PostDetailPage = () => {
           startIcon={<ThumbDown />}
           onClick={handleDislike}
           sx={{
-            backgroundColor: theme.palette.dislike.main,
-            color: "#ffffff",
+            backgroundColor: post.dislikes.includes(user?.id ?? "") ? theme.palette.dislike.main : "transparent",
+            border: `2px solid ${theme.palette.dislike.main}`,
+            color: post.dislikes.includes(user?.id ?? "") ? "#ffffff" : theme.palette.dislike.main,
             "&:hover": {
-              backgroundColor: theme.palette.dislike.dark || "#1565c0",
+              backgroundColor: post.dislikes.includes(user?.id ?? "") ? theme.palette.dislike.dark || "#1565c0" : "rgba(30, 136, 229, 0.1)",
             },
           }}
         >
