@@ -175,23 +175,36 @@ const PostDetailPage = () => {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <Button 
-          startIcon={<ThumbUp />} 
+        <Button
+          startIcon={<ThumbUp />}
           onClick={handleLike}
-          color={post.likes.includes(user?.id ?? "") ? "primary" : "inherit"}
+          sx={{
+            backgroundColor: post.likes.includes(user?.id ?? "") ? theme.palette.like.main : "transparent",
+            border: `2px solid ${theme.palette.like.main}`,
+            color: post.likes.includes(user?.id ?? "") ? "#ffffff" : theme.palette.like.main,
+            "&:hover": {
+              backgroundColor: post.likes.includes(user?.id ?? "") ? theme.palette.like.dark || "#d32f2f" : "rgba(229, 57, 53, 0.1)",
+            },
+          }}
         >
           좋아요 {post.likes.length}
         </Button>
-      
-        <Button 
-          startIcon={<ThumbDown />} 
+        
+        <Button
+          startIcon={<ThumbDown />}
           onClick={handleDislike}
-          color={post.dislikes.includes(user?.id ?? "") ? "error" : "inherit"}
+          sx={{
+            backgroundColor: post.dislikes.includes(user?.id ?? "") ? theme.palette.dislike.main : "transparent",
+            border: `2px solid ${theme.palette.dislike.main}`,
+            color: post.dislikes.includes(user?.id ?? "") ? "#ffffff" : theme.palette.dislike.main,
+            "&:hover": {
+              backgroundColor: post.dislikes.includes(user?.id ?? "") ? theme.palette.dislike.dark || "#1565c0" : "rgba(30, 136, 229, 0.1)",
+            },
+          }}
         >
           싫어요 {post.dislikes.length}
         </Button>
       </Box>
-
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle sx={{ color: theme.palette.warning.main }}>

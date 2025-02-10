@@ -1,5 +1,17 @@
 import { createTheme } from "@mui/material/styles";
 
+declare module "@mui/material/styles" {
+  interface Palette {
+    like: Palette["primary"];
+    dislike: Palette["primary"];
+  }
+
+  interface PaletteOptions {
+    like?: PaletteOptions["primary"];
+    dislike?: PaletteOptions["primary"];
+  }
+}
+
 export const lightTheme = createTheme({
   palette: {
     mode: "light",
@@ -8,6 +20,12 @@ export const lightTheme = createTheme({
     },
     secondary: {
       main: "#757575",
+    },
+    like: {
+      main: "#e53935",
+    },
+    dislike: {
+      main: "#1e88e5",
     },
     background: {
       default: "#f5f5f5",
@@ -81,6 +99,12 @@ export const darkTheme = createTheme({
     },
     secondary: {
       main: "#757575",
+    },
+    like: {
+      main: "#ff5252",
+    },
+    dislike: {
+      main: "#64b5f6",
     },
     background: {
       default: "#212121",

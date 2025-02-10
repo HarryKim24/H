@@ -4,6 +4,7 @@ import { Container, Card, CardContent, Typography, CircularProgress, Button, Box
 import { useNavigate } from "react-router-dom";
 import { ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
+import { useTheme } from "@mui/material/styles";
 
 interface Post {
   _id: string;
@@ -26,6 +27,7 @@ const HomePage = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const { token, user } = useAuthStore();
   const limit = 10;
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -96,9 +98,9 @@ const HomePage = () => {
               </Box>
 
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <ThumbUp fontSize="small" color="primary" />
+                <ThumbUp fontSize="small" sx={{ color: theme.palette.like.main }} />
                 <Typography variant="body2">{post.likes.length}</Typography>
-                <ThumbDown fontSize="small" color="error" />
+                <ThumbDown fontSize="small" sx={{ color: theme.palette.dislike.main }} />
                 <Typography variant="body2">{post.dislikes.length}</Typography>
               </Box>
             </Box>
