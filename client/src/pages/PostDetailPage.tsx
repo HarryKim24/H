@@ -175,23 +175,34 @@ const PostDetailPage = () => {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <Button 
-          startIcon={<ThumbUp />} 
+      <Button
+          startIcon={<ThumbUp />}
           onClick={handleLike}
-          color={post.likes.includes(user?.id ?? "") ? "primary" : "inherit"}
+          sx={{
+            backgroundColor: theme.palette.like.main,
+            color: "#ffffff",
+            "&:hover": {
+              backgroundColor: theme.palette.like.dark || "#d32f2f",
+            },
+          }}
         >
           좋아요 {post.likes.length}
         </Button>
-      
-        <Button 
-          startIcon={<ThumbDown />} 
+        
+        <Button
+          startIcon={<ThumbDown />}
           onClick={handleDislike}
-          color={post.dislikes.includes(user?.id ?? "") ? "error" : "inherit"}
+          sx={{
+            backgroundColor: theme.palette.dislike.main,
+            color: "#ffffff",
+            "&:hover": {
+              backgroundColor: theme.palette.dislike.dark || "#1565c0",
+            },
+          }}
         >
           싫어요 {post.dislikes.length}
         </Button>
       </Box>
-
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle sx={{ color: theme.palette.warning.main }}>
