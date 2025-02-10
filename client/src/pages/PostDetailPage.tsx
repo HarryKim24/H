@@ -62,6 +62,63 @@ const PostDetailPage = () => {
     }
   };
 
+  const handleLike = async () => {
+    if (!user) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+  
+    try {
+      const hasLiked = post?.likes.includes(user.id);
+      if (hasLiked) {
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/like`, {
+          data: { userId: user.id }
+        });
+      } else {
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/like`, { userId: user.id });
+      }
+  
+      setPost((prevPost) => {
+        if (!prevPost) return null;
+        const updatedLikes = hasLiked
+          ? prevPost.likes.filter((id) => id !== user.id)
+          : [...prevPost.likes, user.id];
+        return { ...prevPost, likes: updatedLikes, dislikes: prevPost.dislikes.filter((id) => id !== user.id) };
+      });
+    } catch (error) {
+      console.error("좋아요 처리 실패:", error);
+    }
+  };
+  
+  const handleDislike = async () => {
+    if (!user) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+  
+    try {
+      const hasDisliked = post?.dislikes.includes(user.id);
+      if (hasDisliked) {
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/dislike`, {
+          data: { userId: user.id }
+        });
+      } else {
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/dislike`, { userId: user.id });
+      }
+  
+      setPost((prevPost) => {
+        if (!prevPost) return null;
+        const updatedDislikes = hasDisliked
+          ? prevPost.dislikes.filter((id) => id !== user.id)
+          : [...prevPost.dislikes, user.id];
+        return { ...prevPost, dislikes: updatedDislikes, likes: prevPost.likes.filter((id) => id !== user.id) };
+      });
+    } catch (error) {
+      console.error("싫어요 처리 실패:", error);
+    }
+  };
+  
+
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 5 }} />;
   if (!post) return <Typography sx={{ textAlign: "center", mt: 5 }}>게시글을 찾을 수 없습니다.</Typography>;
 
@@ -118,13 +175,23 @@ const PostDetailPage = () => {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <Button startIcon={<ThumbUp />}>
+        <Button 
+          startIcon={<ThumbUp />} 
+          onClick={handleLike}
+          color={post.likes.includes(user?.id ?? "") ? "primary" : "inherit"}
+        >
           좋아요 {post.likes.length}
         </Button>
-        <Button startIcon={<ThumbDown />}>
+      
+        <Button 
+          startIcon={<ThumbDown />} 
+          onClick={handleDislike}
+          color={post.dislikes.includes(user?.id ?? "") ? "error" : "inherit"}
+        >
           싫어요 {post.dislikes.length}
         </Button>
       </Box>
+
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle sx={{ color: theme.palette.warning.main }}>
