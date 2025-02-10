@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Post = require('../models/Post');
 const cloudinary = require('../config/cloudinary');
 const multer = require("multer");
@@ -40,8 +41,6 @@ const deleteImageFromCloudinary = (imageUrl) => {
     }
   });
 };
-
-
 
 const createPost = async (req, res) => {
   try {
@@ -98,21 +97,43 @@ const getPosts = async (req, res) => {
   }
 };
 
-
 const getPostDetail = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId)
-      .populate('author', 'username')
-      .populate('likes', '_id')
-      .populate('dislikes', '_id');
+    const postId = req.params.postId;
 
-    if (!post) {
+    const post = await Post.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(postId) } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "author",
+          foreignField: "_id",
+          as: "author"
+        }
+      },
+      { $unwind: "$author" },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          content: 1,
+          imageUrl: 1,
+          createdAt: 1,
+          "author._id": 1,
+          "author.username": 1,
+          likes: { $ifNull: ["$likes", []] },
+          dislikes: { $ifNull: ["$dislikes", []] }
+        }
+      }
+    ]);
+
+    if (!post || post.length === 0) {
       return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
     }
 
-    res.json(post);
+    res.json(post[0]);
   } catch (error) {
-    console.error("게시글 조회 오류:", error);
+    console.error("게시글 상세 조회 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
   }
 };
@@ -200,5 +221,103 @@ const deletePostImage = async (req, res) => {
   }
 };
 
+const likePost = async (req, res) => {
+  try {
+      const { postId } = req.params;
+      const { userId } = req.body;
 
-module.exports = { createPost, getPosts, getPostDetail, updatePost, deletePost, deletePostImage };
+      if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+
+      const post = await Post.findById(postId);
+      if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+
+      post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
+      
+      if (post.likes.includes(userId)) {
+          post.likes = post.likes.filter(id => id.toString() !== userId);
+      } else {
+          post.likes.push(userId);
+      }
+
+      await post.save();
+      res.json({ message: '좋아요가 업데이트되었습니다.', likes: post.likes.length });
+  } catch (err) {
+      res.status(500).json({ message: '서버 오류', error: err.message });
+  }
+};
+
+const unlikePost = async (req, res) => {
+  try {
+      const { postId } = req.params;
+      const { userId } = req.body;
+
+      if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+
+      const post = await Post.findById(postId);
+      if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+
+      post.likes = post.likes.filter(id => id.toString() !== userId);
+
+      await post.save();
+      res.json({ message: '좋아요가 취소되었습니다.', likes: post.likes.length });
+  } catch (err) {
+      res.status(500).json({ message: '서버 오류', error: err.message });
+  }
+};
+
+const dislikePost = async (req, res) => {
+  try {
+      const { postId } = req.params;
+      const { userId } = req.body;
+
+      if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+
+      const post = await Post.findById(postId);
+      if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+
+      post.likes = post.likes.filter(id => id.toString() !== userId);
+      
+      if (post.dislikes.includes(userId)) {
+          post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
+      } else {
+          post.dislikes.push(userId);
+      }
+
+      await post.save();
+      res.json({ message: '싫어요가 업데이트되었습니다.', dislikes: post.dislikes.length });
+  } catch (err) {
+      res.status(500).json({ message: '서버 오류', error: err.message });
+  }
+};
+
+const undislikePost = async (req, res) => {
+  try {
+      const { postId } = req.params;
+      const { userId } = req.body;
+
+      if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+
+      const post = await Post.findById(postId);
+      if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+
+      post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
+
+      await post.save();
+      res.json({ message: '싫어요가 취소되었습니다.', dislikes: post.dislikes.length });
+  } catch (err) {
+      res.status(500).json({ message: '서버 오류', error: err.message });
+  }
+};
+
+module.exports = { 
+  createPost, 
+  getPosts, 
+  getPostDetail, 
+  updatePost, 
+  deletePost, 
+  deletePostImage, 
+  likePost,
+  unlikePost,
+  dislikePost,
+  undislikePost 
+};
