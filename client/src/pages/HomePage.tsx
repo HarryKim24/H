@@ -60,7 +60,7 @@ const HomePage = () => {
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 5 }} />;
 
   return (
-    <Container sx={{ pt: 2, pb: 4 }}>
+    <Container sx={{ pt: 2, pb: 4, width: "800px" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: "bold" }}>
           게시글 목록

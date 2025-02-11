@@ -77,7 +77,7 @@ const PostCreatePage = () => {
   };
 
   return (
-    <Container sx={{ pt: 2, pb: 4 }}>
+    <Container sx={{ pt: 2, pb: 4, width: "800px" }}>
       <Typography variant="h5" sx={{ fontWeight: "bold" }}>새 게시글 작성</Typography>
 
       {error && (
