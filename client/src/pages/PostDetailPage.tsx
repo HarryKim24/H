@@ -7,6 +7,8 @@ import {
 } from "@mui/material";
 import { ThumbUp, ThumbDown, Edit, Delete } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
+import CommentSection from "../components/CommentSection";
+
 
 interface Post {
   _id: string;
@@ -228,6 +230,11 @@ const PostDetailPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Box sx={{ width: "800px", margin: "auto", mt: 4 }}>
+
+      <CommentSection postId={postId!} />
+    </Box>
     </Container>
   );
 };
