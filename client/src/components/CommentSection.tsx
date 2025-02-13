@@ -7,21 +7,23 @@ import {
   TextField, 
   Typography, 
   Card, 
-  IconButton 
+  IconButton, 
+  useTheme
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { Edit, Delete, ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 
 interface Comment {
   _id: string;
   content: string;
   createdAt: string;
+  likes: string[];
+  dislikes: string[];
   author: {
     _id: string;
     username: string;
   };
 }
-
 interface CommentSectionProps {
   postId: string;
 }
@@ -33,6 +35,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const [content, setContent] = useState<string>("");
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");
+  const theme = useTheme();
 
   const refreshComments = useCallback(async () => {
     const res = await axios.get<{ comments: Comment[] }>(
@@ -75,6 +78,35 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     refreshComments();
   };
 
+  
+  const handleLike = async (commentId: string) => {
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    refreshComments();
+  };
+
+  const handleUnlike = async (commentId: string) => {
+    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    refreshComments();
+  };
+
+  const handleDislike = async (commentId: string) => {
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    refreshComments();
+  };
+
+  const handleUndislike = async (commentId: string) => {
+    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    refreshComments();
+  };
+
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
   return (
@@ -100,21 +132,48 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
 
       {comments.map((comment) => (
         <Card key={comment._id} sx={{ mb: 1, p: 1, position: "relative", borderRadius: 1, boxShadow: 1 }}>
-          {user?.id === comment.author._id && (
-            <Box sx={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 1 }}>
-              <IconButton size="small" onClick={() => {
-                setEditCommentId(comment._id);
-                setEditContent(comment.content);
-              }}>
-                <Edit fontSize="small" />
-              </IconButton>
-              <IconButton size="small" onClick={() => handleDeleteComment(comment._id)}>
-                <Delete fontSize="small" color="error" />
-              </IconButton>
-            </Box>
-          )}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography fontWeight="bold" sx={{ fontSize: '0.875rem' }}>{comment.author.username}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {user?.id === comment.author._id && (
+                <Box sx={{ display: 'flex', gap: 0.5, pr: 1 }}>
+                  <IconButton size="small" onClick={() => {
+                    setEditCommentId(comment._id);
+                    setEditContent(comment.content);
+                  }}>
+                    <Edit fontSize="small" />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => handleDeleteComment(comment._id)}>
+                    <Delete fontSize="small" color="error" />
+                  </IconButton>
+                </Box>
+              )}
 
-          <Typography fontWeight="bold">{comment.author.username}</Typography>
+              <Box>
+                <IconButton
+                  size="small"
+                  onClick={() => comment.likes.includes(user?.id ?? '') ? handleUnlike(comment._id) : handleLike(comment._id)}
+                  sx={{
+                    color: comment.likes.includes(user?.id ?? '') ? theme.palette.like.main : theme.palette.primary.main,
+                  }}
+                >
+                  <ThumbUp fontSize="small" />
+                  <Typography variant="caption" sx={{ ml: 0.25, fontSize: '0.7rem' }}>{comment.likes?.length ?? 0}</Typography>
+                </IconButton>
+                <IconButton
+                  size="small"
+                  onClick={() => comment.dislikes.includes(user?.id ?? '') ? handleUndislike(comment._id) : handleDislike(comment._id)}
+                  sx={{
+                    color: comment.dislikes.includes(user?.id ?? '') ? theme.palette.dislike.main : theme.palette.primary.main,
+                  }}
+                >
+                  <ThumbDown fontSize="small" />
+                  <Typography variant="caption" sx={{ ml: 0.25, fontSize: '0.7rem' }}>{comment.dislikes?.length ?? 0}</Typography>
+                </IconButton>
+              </Box>
+            </Box>
+          </Box>
+        
           {editCommentId === comment._id ? (
             <>
               <TextField
@@ -124,13 +183,13 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                 variant="outlined"
                 sx={{ mb: 1, mt: 1 }}
               />
-              <Button onClick={() => setEditCommentId(null)} variant="contained">취소</Button>
-              <Button onClick={() => handleUpdateComment(comment._id)} variant="contained" sx={{ ml: 1 }}>수정</Button>
+              <Button onClick={() => setEditCommentId(null)} variant="outlined" sx={{ mr: 1 }}>취소</Button>
+              <Button onClick={() => handleUpdateComment(comment._id)} variant="contained">수정</Button>
             </>
           ) : (
             <>
               <Typography>{comment.content}</Typography>
-              <Typography variant="caption" color="text.disabled">
+              <Typography variant="caption" color="text.secondary">
                 {new Date(comment.createdAt).toLocaleDateString()}
               </Typography>
             </>
