@@ -1,6 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { Box, Button, CircularProgress, TextField, Typography, Card, CardContent } from "@mui/material";
+import { 
+  Box, 
+  Button, 
+  CircularProgress, 
+  TextField, 
+  Typography, 
+  Card, 
+  IconButton 
+} from "@mui/material";
+import { Edit, Delete } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 
 interface Comment {
@@ -17,100 +26,117 @@ interface CommentSectionProps {
   postId: string;
 }
 
-const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
+const CommentSection = ({ postId }: CommentSectionProps) => {
   const { token, user } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [content, setContent] = useState<string>("");
+  const [editCommentId, setEditCommentId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState<string>("");
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const res = await axios.get<{ comments: Comment[] }>(
-          `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`
-        );
-        setComments(res.data.comments);
-      } catch (error) {
-        console.error("댓글 목록 불러오기 실패:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchComments();
+  const refreshComments = useCallback(async () => {
+    const res = await axios.get<{ comments: Comment[] }>(
+      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`
+    );
+    setComments(res.data.comments);
+    setLoading(false);
   }, [postId]);
 
+  useEffect(() => {
+    refreshComments();
+  }, [postId, refreshComments]);
+
   const handleAddComment = async () => {
-    if (!token || !user) {
-      alert("로그인 후 댓글을 작성할 수 있습니다.");
-      return;
-    }
-    if (!content.trim()) {
-      alert("댓글 내용을 입력하세요.");
-      return;
-    }
+    if (!token || !content.trim()) return;
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`,
+      { content },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setContent("");
+    refreshComments();
+  };
 
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`,
-        { content },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+  const handleUpdateComment = async (commentId: string) => {
+    if (!token || !editContent.trim()) return;
+    await axios.put(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
+      { content: editContent },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setEditCommentId(null);
+    setEditContent("");
+    refreshComments();
+  };
 
-      setContent("");
-
-      const res = await axios.get<{ comments: Comment[] }>(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`
-      );
-      setComments(res.data.comments);
-    } catch (error) {
-      console.error("댓글 작성 실패:", error);
-    }
+  const handleDeleteComment = async (commentId: string) => {
+    if (!token || !window.confirm("이 댓글을 삭제하시겠습니까?")) return;
+    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    refreshComments();
   };
 
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
   return (
     <Box sx={{ mt: 6 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>댓글</Typography>
-      {token ? (
-        <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-          <TextField
-            fullWidth
-            label="댓글을 입력하세요"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            variant="outlined"
-          />
-          <Button variant="contained" onClick={handleAddComment}>
-            작성
-          </Button>
-        </Box>
-      ) : (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          로그인 후 댓글을 작성할 수 있습니다.
-        </Typography>
-      )}
+      <Typography variant="h6">댓글</Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+        <TextField
+          fullWidth
+          label="댓글을 입력하세요"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          variant="outlined"
+          sx={{ '& .MuiInputBase-root': { height: 52 } }}
+        />
+        <Button
+          variant="contained"
+          onClick={handleAddComment}
+          sx={{ height: 52 }}
+        >
+          작성
+        </Button>
+      </Box>
 
-      {comments.length > 0 ? (
-        comments.map((comment) => (
-          <Card key={comment._id} sx={{ mb: 1, borderRadius: 1 }}>
-            <CardContent sx={{ p: 1, pb: "8px !important" }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-                {comment.author.username}
-              </Typography>
-              <Typography variant="body1">{comment.content}</Typography>
+      {comments.map((comment) => (
+        <Card key={comment._id} sx={{ mb: 1, p: 1, position: "relative", borderRadius: 1, boxShadow: 1 }}>
+          {user?.id === comment.author._id && (
+            <Box sx={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 1 }}>
+              <IconButton size="small" onClick={() => {
+                setEditCommentId(comment._id);
+                setEditContent(comment.content);
+              }}>
+                <Edit fontSize="small" />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleDeleteComment(comment._id)}>
+                <Delete fontSize="small" color="error" />
+              </IconButton>
+            </Box>
+          )}
+
+          <Typography fontWeight="bold">{comment.author.username}</Typography>
+          {editCommentId === comment._id ? (
+            <>
+              <TextField
+                fullWidth
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                variant="outlined"
+                sx={{ mb: 1, mt: 1 }}
+              />
+              <Button onClick={() => setEditCommentId(null)} variant="contained">취소</Button>
+              <Button onClick={() => handleUpdateComment(comment._id)} variant="contained" sx={{ ml: 1 }}>수정</Button>
+            </>
+          ) : (
+            <>
+              <Typography>{comment.content}</Typography>
               <Typography variant="caption" color="text.disabled">
                 {new Date(comment.createdAt).toLocaleDateString()}
               </Typography>
-            </CardContent>
-          </Card>
-        ))
-      ) : (
-        <Typography variant="body2" color="text.secondary">
-          첫 댓글을 작성해보세요!
-        </Typography>
-      )}
+            </>
+          )}
+        </Card>
+      ))}
     </Box>
   );
 };
