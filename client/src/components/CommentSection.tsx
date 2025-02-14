@@ -191,6 +191,22 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       console.error("싫어요 취소 실패:", error);
     }
   };  
+
+  const formatCommentDate = (createdAt: string): string => {
+    const createdDate = new Date(createdAt);
+    const now = new Date();
+  
+    const isToday = createdDate.toDateString() === now.toDateString();
+  
+    return isToday
+      ? createdDate.toLocaleTimeString('ko-KR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      : `${createdDate.getFullYear()}.${String(createdDate.getMonth() + 1).padStart(2, '0')}.${String(createdDate.getDate()).padStart(2, '0')}`;
+  };
+
   
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
@@ -275,7 +291,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
             <>
               <Typography>{comment.content}</Typography>
               <Typography variant="caption" color="text.secondary">
-                {new Date(comment.createdAt).toLocaleDateString()}
+                {formatCommentDate(comment.createdAt)}
               </Typography>
             </>
           )}
