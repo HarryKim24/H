@@ -290,7 +290,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
           ) : (
             <>
               <Typography>{comment.content}</Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.disabled">
                 {formatCommentDate(comment.createdAt)}
               </Typography>
             </>
