@@ -211,26 +211,35 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
   return (
-    <Box sx={{ mt: 6 }}>
+    <Box sx={{ mt: 6, width: "800px", pr: "24px", mr: "24px" }}>
       <Typography variant="h6">댓글</Typography>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2, mt: 1 }}>
         <TextField
           fullWidth
-          label="댓글을 입력하세요"
+          multiline
+          minRows={2}
+          maxRows={10}
+          label={!token ? "로그인 후 댓글 작성이 가능합니다" : "댓글을 입력하세요"}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           variant="outlined"
-          sx={{ '& .MuiInputBase-root': { height: 52 } }}
+          disabled={!token}
+          sx={{
+            '& .MuiInputBase-root': {
+              padding: '10px',
+            },
+          }}
         />
         <Button
           variant="contained"
           onClick={handleAddComment}
-          sx={{ height: 52 }}
+          disabled={!token}
+          sx={{ alignSelf: 'flex-start', height: 40 }}
         >
           작성
         </Button>
       </Box>
-
+      
       {comments.map((comment) => (
         <Card key={comment._id} sx={{ mb: 1, p: 1, borderRadius: 1, boxShadow: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -279,18 +288,42 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
             <>
               <TextField
                 fullWidth
+                multiline
+                minRows={2}
+                maxRows={10}
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 variant="outlined"
-                sx={{ mb: 1, mt: 1 }}
+                placeholder="댓글을 수정하세요"
+                sx={{
+                  mb: 1,
+                  mt: 1,
+                  '& .MuiInputBase-root': {
+                    padding: '10px',
+                  },
+                }}
               />
-              <Button onClick={() => setEditCommentId(null)} variant="outlined" sx={{ mr: 1 }}>취소</Button>
-              <Button onClick={() => handleUpdateComment(comment._id)} variant="contained">수정</Button>
+              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                <Button 
+                  onClick={() => setEditCommentId(null)} 
+                  variant="outlined" 
+                  color="inherit"
+                >
+                  취소
+                </Button>
+                <Button 
+                  onClick={() => handleUpdateComment(comment._id)} 
+                  variant="contained" 
+                  color="primary"
+                >
+                  수정
+                </Button>
+              </Box>
             </>
           ) : (
             <>
-              <Typography>{comment.content}</Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography sx={{ whiteSpace: 'pre-wrap' }}>{comment.content}</Typography>
+              <Typography variant="caption" color="text.disabled">
                 {formatCommentDate(comment.createdAt)}
               </Typography>
             </>
