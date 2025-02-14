@@ -82,12 +82,19 @@ const createPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const totalPosts = await Post.countDocuments();
-    const posts = await Post.find()
+    const { page = 1, limit = 10, filter } = req.query;
+    const skip = (page - 1) * Number(limit);
+    let query = {};
+    if (filter === 'popular') {
+      query = { $expr: { $gte: [{ $size: "$likes" }, 10] } };
+    }
+
+    const totalPosts = await Post.countDocuments(query);
+
+    const posts = await Post.find(query)
       .populate('author', 'username')
       .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
+      .skip(skip)
       .limit(Number(limit));
 
     res.json({ posts, totalPosts });
@@ -96,6 +103,7 @@ const getPosts = async (req, res) => {
     res.status(500).json({ message: "서버 오류", error });
   }
 };
+
 
 const getPostDetail = async (req, res) => {
   try {
