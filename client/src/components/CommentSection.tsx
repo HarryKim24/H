@@ -211,18 +211,19 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
   return (
-    <Box sx={{ mt: 6 }}>
+    <Box sx={{ mt: 6, width: "800px", pr: "24px", mr: "24px" }}>
       <Typography variant="h6">댓글</Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2, mt: 1 }}>
         <TextField
           fullWidth
           multiline
           minRows={2}
           maxRows={10}
-          label="댓글을 입력하세요"
+          label={!token ? "로그인 후 댓글 작성이 가능합니다" : "댓글을 입력하세요"}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           variant="outlined"
+          disabled={!token}
           sx={{
             '& .MuiInputBase-root': {
               padding: '10px',
@@ -232,6 +233,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
         <Button
           variant="contained"
           onClick={handleAddComment}
+          disabled={!token}
           sx={{ alignSelf: 'flex-start', height: 40 }}
         >
           작성
