@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 import { useTheme } from "@mui/material/styles";
+import { formatPostDate } from "../utils/postDateUtils";
 
 interface Post {
   _id: string;
@@ -93,7 +94,7 @@ const HomePage = () => {
                   작성자: {post.author?.username || "알 수 없음"}
                 </Typography>
                 <Typography variant="caption" color="text.disabled">
-                  {new Date(post.createdAt).toLocaleDateString()}
+                  {formatPostDate(post.createdAt)}
                 </Typography>
               </Box>
 

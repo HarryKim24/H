@@ -8,6 +8,7 @@ import {
 import { ThumbUp, ThumbDown, Edit, Delete } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 import CommentSection from "../components/CommentSection";
+import { formatPostDate } from "../utils/postDateUtils";
 
 
 interface Post {
@@ -119,7 +120,6 @@ const PostDetailPage = () => {
       console.error("싫어요 처리 실패:", error);
     }
   };
-  
 
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 5 }} />;
   if (!post) return <Typography sx={{ textAlign: "center", mt: 5 }}>게시글을 찾을 수 없습니다.</Typography>;
@@ -160,7 +160,7 @@ const PostDetailPage = () => {
         <Box>
           <Typography variant="body2">작성자: {post.author.username}</Typography>
           <Typography variant="caption" color="text.disabled">
-            {new Date(post.createdAt).toLocaleDateString()}
+                  {formatPostDate(post.createdAt)}
           </Typography>
         </Box>
 
