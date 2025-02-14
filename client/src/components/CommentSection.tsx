@@ -213,24 +213,31 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   return (
     <Box sx={{ mt: 6 }}>
       <Typography variant="h6">댓글</Typography>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2 }}>
         <TextField
           fullWidth
+          multiline
+          minRows={2}
+          maxRows={10}
           label="댓글을 입력하세요"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           variant="outlined"
-          sx={{ '& .MuiInputBase-root': { height: 52 } }}
+          sx={{
+            '& .MuiInputBase-root': {
+              padding: '10px',
+            },
+          }}
         />
         <Button
           variant="contained"
           onClick={handleAddComment}
-          sx={{ height: 52 }}
+          sx={{ alignSelf: 'flex-start', height: 40 }}
         >
           작성
         </Button>
       </Box>
-
+      
       {comments.map((comment) => (
         <Card key={comment._id} sx={{ mb: 1, p: 1, borderRadius: 1, boxShadow: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -279,17 +286,41 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
             <>
               <TextField
                 fullWidth
+                multiline
+                minRows={2}
+                maxRows={10}
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 variant="outlined"
-                sx={{ mb: 1, mt: 1 }}
+                placeholder="댓글을 수정하세요"
+                sx={{
+                  mb: 1,
+                  mt: 1,
+                  '& .MuiInputBase-root': {
+                    padding: '10px',
+                  },
+                }}
               />
-              <Button onClick={() => setEditCommentId(null)} variant="outlined" sx={{ mr: 1 }}>취소</Button>
-              <Button onClick={() => handleUpdateComment(comment._id)} variant="contained">수정</Button>
+              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                <Button 
+                  onClick={() => setEditCommentId(null)} 
+                  variant="outlined" 
+                  color="inherit"
+                >
+                  취소
+                </Button>
+                <Button 
+                  onClick={() => handleUpdateComment(comment._id)} 
+                  variant="contained" 
+                  color="primary"
+                >
+                  수정
+                </Button>
+              </Box>
             </>
           ) : (
             <>
-              <Typography>{comment.content}</Typography>
+              <Typography sx={{ whiteSpace: 'pre-wrap' }}>{comment.content}</Typography>
               <Typography variant="caption" color="text.disabled">
                 {formatCommentDate(comment.createdAt)}
               </Typography>
