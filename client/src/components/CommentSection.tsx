@@ -95,6 +95,10 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };
 
   const handleLike = async (commentId: string) => {
+    if (!token) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
     try {
       await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, 
@@ -118,6 +122,10 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };
   
   const handleUnlike = async (commentId: string) => {
+    if (!token) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
     try {
       await axios.delete(
         `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, 
@@ -136,6 +144,10 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };
   
   const handleDislike = async (commentId: string) => {
+    if (!token) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
     try {
       await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, 
@@ -159,6 +171,10 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };
   
   const handleUndislike = async (commentId: string) => {
+    if (!token) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
     try {
       await axios.delete(
         `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, 
@@ -174,7 +190,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     } catch (error) {
       console.error("싫어요 취소 실패:", error);
     }
-  };
+  };  
   
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
