@@ -8,6 +8,7 @@ import {
   Typography, 
   Card, 
   IconButton, 
+  Pagination,
   useTheme
 } from "@mui/material";
 import { Edit, Delete, ThumbUp, ThumbDown } from "@mui/icons-material";
@@ -24,6 +25,7 @@ interface Comment {
     username: string;
   };
 }
+
 interface CommentSectionProps {
   postId: string;
 }
@@ -35,15 +37,26 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const [content, setContent] = useState<string>("");
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const commentsPerPage = 10;
+
   const theme = useTheme();
 
   const refreshComments = useCallback(async () => {
-    const res = await axios.get<{ comments: Comment[] }>(
-      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`
-    );
-    setComments(res.data.comments);
-    setLoading(false);
-  }, [postId]);
+    try {
+      setLoading(true);
+      const res = await axios.get<{ comments: Comment[]; totalComments: number }>(
+        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments?page=${currentPage}&limit=${commentsPerPage}`
+      );
+      setComments(res.data.comments);
+      setTotalPages(Math.ceil(res.data.totalComments / commentsPerPage));
+    } catch (error) {
+      console.error("댓글 불러오기 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [postId, currentPage]);
 
   useEffect(() => {
     refreshComments();
@@ -51,7 +64,8 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
 
   const handleAddComment = async () => {
     if (!token || !content.trim()) return;
-    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`,
+    await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`,
       { content },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -61,7 +75,8 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
 
   const handleUpdateComment = async (commentId: string) => {
     if (!token || !editContent.trim()) return;
-    await axios.put(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
+    await axios.put(
+      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
       { content: editContent },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -72,41 +87,127 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
 
   const handleDeleteComment = async (commentId: string) => {
     if (!token || !window.confirm("이 댓글을 삭제하시겠습니까?")) return;
-    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
+    await axios.delete(
+      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     refreshComments();
   };
 
-  
   const handleLike = async (commentId: string) => {
-    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    refreshComments();
+    if (!token) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, 
+        {}, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setComments((prevComments) =>
+        prevComments.map(comment =>
+          comment._id === commentId
+            ? {
+                ...comment,
+                likes: [...comment.likes, user?.id ?? ''],
+                dislikes: comment.dislikes.filter(id => id !== user?.id)
+              }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error("좋아요 실패:", error);
+    }
   };
-
+  
   const handleUnlike = async (commentId: string) => {
-    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    refreshComments();
+    if (!token) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setComments((prevComments) =>
+        prevComments.map(comment =>
+          comment._id === commentId
+            ? { ...comment, likes: comment.likes.filter(id => id !== user?.id) }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error("좋아요 취소 실패:", error);
+    }
   };
-
+  
   const handleDislike = async (commentId: string) => {
-    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    refreshComments();
+    if (!token) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, 
+        {}, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setComments((prevComments) =>
+        prevComments.map(comment =>
+          comment._id === commentId
+            ? {
+                ...comment,
+                dislikes: [...comment.dislikes, user?.id ?? ''],
+                likes: comment.likes.filter(id => id !== user?.id)
+              }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error("싫어요 실패:", error);
+    }
   };
-
+  
   const handleUndislike = async (commentId: string) => {
-    await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    refreshComments();
+    if (!token) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setComments((prevComments) =>
+        prevComments.map(comment =>
+          comment._id === commentId
+            ? { ...comment, dislikes: comment.dislikes.filter(id => id !== user?.id) }
+            : comment
+        )
+      );
+    } catch (error) {
+      console.error("싫어요 취소 실패:", error);
+    }
+  };  
+
+  const formatCommentDate = (createdAt: string): string => {
+    const createdDate = new Date(createdAt);
+    const now = new Date();
+  
+    const isToday = createdDate.toDateString() === now.toDateString();
+  
+    return isToday
+      ? createdDate.toLocaleTimeString('ko-KR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })
+      : `${createdDate.getFullYear()}.${String(createdDate.getMonth() + 1).padStart(2, '0')}.${String(createdDate.getDate()).padStart(2, '0')}`;
   };
 
+  
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
   return (
@@ -131,7 +232,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       </Box>
 
       {comments.map((comment) => (
-        <Card key={comment._id} sx={{ mb: 1, p: 1, position: "relative", borderRadius: 1, boxShadow: 1 }}>
+        <Card key={comment._id} sx={{ mb: 1, p: 1, borderRadius: 1, boxShadow: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography fontWeight="bold" sx={{ fontSize: '0.875rem' }}>{comment.author.username}</Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -173,7 +274,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
               </Box>
             </Box>
           </Box>
-        
+
           {editCommentId === comment._id ? (
             <>
               <TextField
@@ -190,12 +291,21 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
             <>
               <Typography>{comment.content}</Typography>
               <Typography variant="caption" color="text.secondary">
-                {new Date(comment.createdAt).toLocaleDateString()}
+                {formatCommentDate(comment.createdAt)}
               </Typography>
             </>
           )}
         </Card>
       ))}
+
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+        <Pagination 
+          count={totalPages} 
+          page={currentPage} 
+          onChange={(_, page) => setCurrentPage(page)}
+          color="primary"
+        />
+      </Box>
     </Box>
   );
 };
