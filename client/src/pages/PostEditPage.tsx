@@ -138,7 +138,10 @@ const PostEditPage = () => {
         )}
       </Box>
 
-      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+        <Button variant="outlined" onClick={() => navigate(`/posts/${postId}`)}>
+          취소
+        </Button>
         <Button variant="contained" onClick={handleUpdate}>
           수정하기
         </Button>
