@@ -3,9 +3,12 @@ import { FormEvent, useEffect, useState } from "react";
 import axios from "axios";
 import { useAuthStore } from "../context/authStore";
 import { 
-  Container, TextField, Typography, Button, Box, CircularProgress, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme 
+  Container, TextField, Typography, Button, Box, CircularProgress, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme, 
+  InputAdornment,
+  IconButton
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const ProfilePage = () => {
   const { user, token, logout } = useAuthStore();
@@ -14,7 +17,11 @@ const ProfilePage = () => {
   const [username, setUsername] = useState(user?.username || "");
   const [points, setPoints] = useState(0);
   const [createdAt, setCreatedAt] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -44,18 +51,27 @@ const ProfilePage = () => {
     fetchProfile();
   }, [token, navigate]);
 
-  const handleUpdateProfile = async () => {
+  const handleUpdateProfile = async (e: FormEvent) => {
+    e.preventDefault();
     try {
       setLoading(true);
       setMessage("");
       setError("");
 
+      const updateData: any = { username };
+      if (newPassword) {
+        updateData.currentPassword = currentPassword;
+        updateData.newPassword = newPassword;
+      }
+
       await axios.put(`${import.meta.env.VITE_API_BASE_URL}/user/profile`, 
-        { username }, 
+        updateData, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setMessage("프로필이 업데이트되었습니다.");
+      setCurrentPassword("");
+      setNewPassword("");
     } catch (err: any) {
       setError(err.response?.data?.message || "프로필 업데이트 실패");
     } finally {
@@ -103,31 +119,72 @@ const ProfilePage = () => {
           </Alert>
         )}
 
-        <TextField 
-          label="닉네임" 
-          fullWidth 
-          margin="normal" 
-          value={username} 
-          onChange={(e) => setUsername(e.target.value)}
-        />
-
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          <strong>보유 포인트:</strong> {points}
-        </Typography>
-        <Typography variant="body1" sx={{ mt: 1, mb: 2 }}>
-          <strong>가입 날짜:</strong> {createdAt}
-        </Typography>
-
-        <Button 
-          variant="contained" 
-          color="primary" 
-          fullWidth 
-          disabled={loading} 
-          onClick={handleUpdateProfile} 
-          sx={{ mt: 2 }}
-        >
-          {loading ? <CircularProgress size={24} color="inherit" /> : "프로필 업데이트"}
-        </Button>
+        <form onSubmit={handleUpdateProfile} autoComplete="off">
+          <TextField 
+            label="닉네임" 
+            fullWidth 
+            margin="normal" 
+            value={username} 
+            onChange={(e) => setUsername(e.target.value)}
+            autoComplete="username"
+          />
+  
+          <TextField
+            label="현재 비밀번호"
+            type={showCurrentPassword ? "text" : "password"}
+            fullWidth
+            margin="normal"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            autoComplete="current-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)} edge="end">
+                    {showCurrentPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+  
+          <TextField
+            label="새 비밀번호"
+            type={showNewPassword ? "text" : "password"}
+            fullWidth
+            margin="normal"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
+                    {showNewPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+  
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            <strong>보유 포인트:</strong> {points}
+          </Typography>
+          <Typography variant="body1" sx={{ mt: 1, mb: 2 }}>
+            <strong>가입 날짜:</strong> {createdAt}
+          </Typography>
+  
+          <Button 
+            variant="contained" 
+            color="primary" 
+            fullWidth 
+            disabled={loading} 
+            onClick={handleUpdateProfile} 
+            sx={{ mt: 2 }}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : "프로필 업데이트"}
+          </Button>
+        </form>
 
         <Button 
           variant="contained"  
