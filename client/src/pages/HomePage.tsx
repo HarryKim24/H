@@ -100,7 +100,12 @@ const HomePage = () => {
               fontWeight: "bold",
               backgroundColor: filter === "all" ? theme.palette.secondary.main : theme.palette.background.default,
               border: `1px solid ${theme.palette.secondary.main}`,
-              color: filter === "all" ? theme.palette.background.default : theme.palette.secondary.main
+              color: filter === "all" ? theme.palette.background.default : theme.palette.secondary.main,
+              "&:hover" : {
+                backgroundColor: theme.palette.secondary.dark,
+                borderColor: theme.palette.secondary.dark,
+                color: theme.palette.background.default
+              }
             }}
             onClick={() => handleFilterChange("all")}
           >
@@ -112,7 +117,12 @@ const HomePage = () => {
               fontWeight: "bold",
               backgroundColor: filter === "popular" ? theme.palette.secondary.main : theme.palette.background.default,
               border: `1px solid ${theme.palette.secondary.main}`,
-              color: filter === "popular" ? theme.palette.background.default : theme.palette.secondary.main
+              color: filter === "popular" ? theme.palette.background.default : theme.palette.secondary.main,
+              "&:hover" : {
+                backgroundColor: theme.palette.secondary.dark,
+                borderColor: theme.palette.secondary.dark,
+                color: theme.palette.background.default
+              }
             }}
             onClick={() => handleFilterChange("popular")}
           >
@@ -125,7 +135,12 @@ const HomePage = () => {
                 fontWeight: "bold",
                 backgroundColor: filter === "my-posts" ? theme.palette.secondary.main : theme.palette.background.default,
                 border: `1px solid ${theme.palette.secondary.main}`,
-                color: filter === "my-posts" ? theme.palette.background.default : theme.palette.secondary.main
+                color: filter === "my-posts" ? theme.palette.background.default : theme.palette.secondary.main,
+                "&:hover" : {
+                  backgroundColor: theme.palette.secondary.dark,
+                  borderColor: theme.palette.secondary.dark,
+                  color: theme.palette.background.default
+                }
               }}
               onClick={() => handleFilterChange("my-posts")}
             >
