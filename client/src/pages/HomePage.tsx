@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Container, Card, CardContent, Typography, CircularProgress, Button, Box, Divider, Pagination } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -20,6 +20,13 @@ interface Post {
   createdAt: string;
 }
 
+interface PostQueryParams {
+  page: number;
+  limit: number;
+  filter: string;
+  author?: string;
+}
+
 const HomePage = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -31,12 +38,22 @@ const HomePage = () => {
   const limit = 10;
   const theme = useTheme();
 
-  const fetchPosts = async (selectedFilter: string, page: number) => {
+  const fetchPosts = useCallback(async (selectedFilter: string, page: number) => {
     try {
+      if (selectedFilter === "my-posts" && !user) return;
+  
       setLoading(true);
+      const params: PostQueryParams = { page, limit, filter: selectedFilter };
+  
+      if (selectedFilter === "my-posts" && user) {
+        params.author = user.id;
+      }
+  
       const res = await axios.get<{ posts: Post[]; totalPosts: number }>(
-        `${import.meta.env.VITE_API_BASE_URL}/posts?page=${page}&limit=${limit}&filter=${selectedFilter}`
+        `${import.meta.env.VITE_API_BASE_URL}/posts`,
+        { params, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
+  
       setPosts(res.data.posts);
       setTotalPages(Math.ceil(res.data.totalPosts / limit));
     } catch (err) {
@@ -44,11 +61,18 @@ const HomePage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, token]);
+  
+  useEffect(() => {
+    if (user) {
+      fetchPosts(filter, currentPage);
+    }
+  }, [filter, currentPage, user, fetchPosts]);
+  
 
   useEffect(() => {
     fetchPosts(filter, currentPage);
-  }, [filter, currentPage]);
+  }, [filter, currentPage, fetchPosts]);
 
   const handleFilterChange = (newFilter: string) => {
     setFilter(newFilter);
@@ -72,10 +96,10 @@ const HomePage = () => {
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button 
             variant={filter === "all" ? "outlined" : "contained"} 
-            sx={{ 
-              fontWeight: "bold", 
+            sx={{
+              fontWeight: "bold",
               backgroundColor: filter === "all" ? theme.palette.secondary.main : theme.palette.background.default,
-              border: filter === "all" ? `1px solid ${theme.palette.secondary.main}` : `1px solid ${theme.palette.secondary.main}`,
+              border: `1px solid ${theme.palette.secondary.main}`,
               color: filter === "all" ? theme.palette.background.default : theme.palette.secondary.main
             }}
             onClick={() => handleFilterChange("all")}
@@ -84,16 +108,30 @@ const HomePage = () => {
           </Button>
           <Button 
             variant={filter === "popular" ? "outlined" : "contained"} 
-            sx={{ 
-              fontWeight: "bold", 
+            sx={{
+              fontWeight: "bold",
               backgroundColor: filter === "popular" ? theme.palette.secondary.main : theme.palette.background.default,
-              border: filter === "popular" ? `1px solid ${theme.palette.secondary.main}` : `1px solid ${theme.palette.secondary.main}`,
+              border: `1px solid ${theme.palette.secondary.main}`,
               color: filter === "popular" ? theme.palette.background.default : theme.palette.secondary.main
             }}
             onClick={() => handleFilterChange("popular")}
           >
             인기 글
           </Button>
+          {token && user && (
+            <Button 
+              variant={filter === "my-posts" ? "outlined" : "contained"} 
+              sx={{
+                fontWeight: "bold",
+                backgroundColor: filter === "my-posts" ? theme.palette.secondary.main : theme.palette.background.default,
+                border: `1px solid ${theme.palette.secondary.main}`,
+                color: filter === "my-posts" ? theme.palette.background.default : theme.palette.secondary.main
+              }}
+              onClick={() => handleFilterChange("my-posts")}
+            >
+              내 글
+            </Button>
+          )}
         </Box>
 
         <Button variant="contained" onClick={handleCreatePost}>

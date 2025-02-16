@@ -82,24 +82,32 @@ const createPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, filter } = req.query;
-    const skip = (page - 1) * Number(limit);
+    const { page = 1, limit = 10, filter, author } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
     let query = {};
-    if (filter === 'popular') {
-      query = { $expr: { $gte: [{ $size: "$likes" }, 10] } };
+
+    if (filter === "popular") {
+      query = { $expr: { $gte: [{ $ifNull: [{ $size: "$likes" }, 0] }, 10] } };
+    }
+
+    if (filter === "my-posts" && author) {
+      query.author = new mongoose.Types.ObjectId(author);
     }
 
     const totalPosts = await Post.countDocuments(query);
-
     const posts = await Post.find(query)
-      .populate('author', 'username')
+      .populate("author", "username")
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(Number(limit));
+      .limit(limitNum);
 
-    res.json({ posts, totalPosts });
+    res.json({ posts, totalPosts, page: pageNum, limit: limitNum });
   } catch (error) {
-    console.error("게시글 목록 불러오기 오류:", error);
+    console.error("🔥 게시글 목록 불러오기 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
   }
 };
