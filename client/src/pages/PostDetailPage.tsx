@@ -133,6 +133,8 @@ const PostDetailPage = () => {
         {post.title}
       </Typography>
 
+      <Divider sx={{ my: 2 }} />
+
       {post.imageUrl && (
         <Box sx={{ mb: 2 }}>
           <img 
