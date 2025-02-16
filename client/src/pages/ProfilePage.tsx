@@ -3,9 +3,12 @@ import { FormEvent, useEffect, useState } from "react";
 import axios from "axios";
 import { useAuthStore } from "../context/authStore";
 import { 
-  Container, TextField, Typography, Button, Box, CircularProgress, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme 
+  Container, TextField, Typography, Button, Box, CircularProgress, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme, 
+  InputAdornment,
+  IconButton
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const ProfilePage = () => {
   const { user, token, logout } = useAuthStore();
@@ -17,6 +20,8 @@ const ProfilePage = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -126,22 +131,40 @@ const ProfilePage = () => {
   
           <TextField
             label="현재 비밀번호"
-            type="password"
+            type={showCurrentPassword ? "text" : "password"}
             fullWidth
             margin="normal"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             autoComplete="current-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowCurrentPassword(!showCurrentPassword)} edge="end">
+                    {showCurrentPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
   
           <TextField
             label="새 비밀번호"
-            type="password"
+            type={showNewPassword ? "text" : "password"}
             fullWidth
             margin="normal"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             autoComplete="new-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
+                    {showNewPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
   
           <Typography variant="body1" sx={{ mt: 2 }}>
