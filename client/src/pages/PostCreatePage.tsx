@@ -138,7 +138,8 @@ const PostCreatePage = () => {
         )}
       </Box>
 
-      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+      <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+        <Button variant="contained" onClick={() => navigate("/")} >취소</Button>
         <Button variant="contained" onClick={handleSubmit} disabled={loading}>
           {loading ? "작성 중..." : "작성하기"}
         </Button>

@@ -177,15 +177,14 @@ const HomePage = () => {
               <Divider sx={{ my: 1 }} />
 
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
+                <Box sx={{ lineHeight: 1 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 0, paddingBottom: 0 }}>
                     작성자: {post.author?.username || "알 수 없음"}
                   </Typography>
-                  <Typography variant="caption" color="text.disabled">
+                  <Typography variant="caption" color="text.disabled" sx={{ marginTop: 0, paddingTop: 0, display: "block" }}>
                     {formatPostDate(post.createdAt)}
                   </Typography>
                 </Box>
-
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <ThumbUp fontSize="small" sx={{ color: theme.palette.like.main }} />
                   <Typography variant="body2">{post.likes.length}</Typography>
