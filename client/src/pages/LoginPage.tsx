@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useAuthStore } from "../context/authStore";
 import { useNavigate } from "react-router-dom";
-import { Container, TextField, Button, Typography, Box } from "@mui/material";
+import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const LoginPage = () => {
   const { login } = useAuthStore();
   const navigate = useNavigate();
   const [user_id, setUserId] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,14 +38,24 @@ const LoginPage = () => {
             onChange={(e) => setUserId(e.target.value)}
             autoComplete="username"
           />
+
           <TextField
             label="비밀번호"
-            type="password"
+            type={showPassword ? "text" : "password"}
             fullWidth
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                    {showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
           
           <Button 
