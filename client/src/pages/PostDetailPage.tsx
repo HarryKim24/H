@@ -9,6 +9,7 @@ import { ThumbUp, ThumbDown, Edit, Delete } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 import CommentSection from "../components/CommentSection";
 import { formatPostDate } from "../utils/postDateUtils";
+import getAnimalIcon from "../utils/getAnimalIcon"; 
 
 
 interface Post {
@@ -32,6 +33,7 @@ const PostDetailPage = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [openDialog, setOpenDialog] = useState(false);
+  const [authorPoints, setAuthorPoints] = useState<number | null>(null);
   const theme = useTheme();
 
   useEffect(() => {
@@ -41,6 +43,7 @@ const PostDetailPage = () => {
       try {
         const res = await axios.get<Post>(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`);
         setPost(res.data);
+        fetchAuthorPoints(res.data.author.username);
       } catch (err) {
         console.error("게시글 불러오기 실패:", err);
         setPost(null);
@@ -51,6 +54,17 @@ const PostDetailPage = () => {
   
     fetchPost();
   }, [postId]);
+
+  const fetchAuthorPoints = async (username: string) => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/user/get-username`, {
+        params: { username }
+      });
+      setAuthorPoints(res.data.points);
+    } catch (err) {
+      console.error("작성자 포인트 불러오기 실패:", err);
+    }
+  };
 
   const handleDelete = async () => {
     if (!token || !post || !user || String(post.author._id) !== String(user.id)) {
@@ -162,7 +176,19 @@ const PostDetailPage = () => {
 
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <Box>
-          <Typography variant="body2">작성자: {post.author.username}</Typography>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <Typography variant="body2">작성자:</Typography>
+            {authorPoints !== null && (
+              <img 
+                src={getAnimalIcon(authorPoints)} 
+                alt="User rank icon" 
+                width={20} 
+                height={20} 
+                style={{ verticalAlign: "middle", margin: "0 4px" }}
+              />
+            )}
+            <Typography variant="body2">{post.author.username}</Typography>
+          </Box>
           <Typography variant="caption" color="text.disabled">
                   {formatPostDate(post.createdAt)}
           </Typography>
