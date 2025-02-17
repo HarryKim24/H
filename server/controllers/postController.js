@@ -2,10 +2,6 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const Post = require('../models/Post');
 const cloudinary = require('../config/cloudinary');
-const multer = require("multer");
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 const uploadImageToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
