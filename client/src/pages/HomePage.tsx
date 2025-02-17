@@ -6,6 +6,7 @@ import { ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 import { useTheme } from "@mui/material/styles";
 import { formatPostDate } from "../utils/postDateUtils";
+import getAnimalIcon from "../utils/getAnimalIcon";
 
 interface Post {
   _id: string;
@@ -27,10 +28,15 @@ interface PostQueryParams {
   author?: string;
 }
 
+interface AuthorPoints {
+  [username: string]: number;
+}
+
 const HomePage = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [authorPoints, setAuthorPoints] = useState<AuthorPoints>({});
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [filter, setFilter] = useState<string>("all");
@@ -56,12 +62,34 @@ const HomePage = () => {
   
       setPosts(res.data.posts);
       setTotalPages(Math.ceil(res.data.totalPosts / limit));
+
+      const usernames = [...new Set(res.data.posts.map((post) => post.author.username))];
+      fetchAuthorPoints(usernames);
     } catch (err) {
       console.error("게시글 불러오기 실패:", err);
     } finally {
       setLoading(false);
     }
   }, [user, token]);
+
+  const fetchAuthorPoints = async (usernames: string[]) => {
+    try {
+      const responses = await Promise.all(
+        usernames.map((username) =>
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/user/get-username`, { params: { username } })
+        )
+      );
+
+      const newAuthorPoints: AuthorPoints = {};
+      responses.forEach((res) => {
+        newAuthorPoints[res.data.username] = res.data.points;
+      });
+
+      setAuthorPoints((prev) => ({ ...prev, ...newAuthorPoints }));
+    } catch (err) {
+      console.error("작성자 포인트 불러오기 실패:", err);
+    }
+  };
   
   useEffect(() => {
     if (user) {
@@ -178,8 +206,22 @@ const HomePage = () => {
 
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <Box sx={{ lineHeight: 1 }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 0, paddingBottom: 0 }}>
-                    작성자: {post.author?.username || "알 수 없음"}
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    sx={{ display: "flex", alignItems: "center", marginBottom: 0, paddingBottom: 0 }}
+                  >
+                    작성자: 
+                    {authorPoints[post.author.username] !== undefined && (
+                      <img 
+                        src={getAnimalIcon(authorPoints[post.author.username])} 
+                        alt="User rank icon" 
+                        width={20} 
+                        height={20} 
+                        style={{ verticalAlign: "middle", margin: "0 4px" }}
+                      />
+                    )}
+                    {post.author?.username || "알 수 없음"}
                   </Typography>
                   <Typography variant="caption" color="text.disabled" sx={{ marginTop: 0, paddingTop: 0, display: "block" }}>
                     {formatPostDate(post.createdAt)}

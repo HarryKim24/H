@@ -3,12 +3,14 @@ import { FormEvent, useEffect, useState } from "react";
 import axios from "axios";
 import { useAuthStore } from "../context/authStore";
 import { 
-  Container, TextField, Typography, Button, Box, CircularProgress, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, useTheme, 
-  InputAdornment,
-  IconButton
+  Container, TextField, Typography, Button, Box, 
+  CircularProgress, Alert, Dialog, DialogActions, 
+  DialogContent, DialogContentText, DialogTitle, 
+  useTheme, InputAdornment, IconButton
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import getAnimalIcon from "../utils/getAnimalIcon";
 
 const ProfilePage = () => {
   const { user, token, logout } = useAuthStore();
@@ -166,10 +168,15 @@ const ProfilePage = () => {
               )
             }}
           />
-  
-          <Typography variant="body1" sx={{ mt: 2 }}>
-            <strong>보유 포인트:</strong> {points}
-          </Typography>
+
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mt: 2 }}>
+            <Typography variant="body1">
+              <strong>보유 포인트:</strong> {points}
+            </Typography>
+            <Box sx={{ ml: 1 }}>
+              <img src={getAnimalIcon(points)} alt="User rank icon" width={40} />
+            </Box>
+          </Box>
           <Typography variant="body1" sx={{ mt: 1, mb: 2 }}>
             <strong>가입 날짜:</strong> {createdAt}
           </Typography>
