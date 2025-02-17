@@ -275,38 +275,37 @@ const likePost = async (req, res) => {
 
     if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("author");
     if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    const author = await User.findById(post.author._id);
+    if (!author) return res.status(404).json({ message: "게시글 작성자를 찾을 수 없습니다." });
 
     let pointsChange = 0;
 
-    if (post.dislikes.some(id => id.toString() === userId)) {
+    if (post.dislikes.includes(userId)) {
       post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
-      user.points += 1;
+      author.points += 1;
       pointsChange += 1;
     }
 
-    if (post.likes.some(id => id.toString() === userId)) {
+    if (post.likes.includes(userId)) {
       post.likes = post.likes.filter(id => id.toString() !== userId);
-      user.points = Math.max(0, user.points - 3);
+      author.points = Math.max(0, author.points - 3);
       pointsChange -= 3;
     } else {
-      post.likes.push(new mongoose.Types.ObjectId(userId));
-      user.points += 3;
+      post.likes.push(userId);
+      author.points += 3;
       pointsChange += 3;
     }
 
-    await post.save();
-    await user.save();
+    await Promise.all([post.save(), author.save()]);
 
-    res.json({
+    res.status(200).json({
       message: "좋아요 업데이트 완료",
       likes: post.likes.map(id => id.toString()),
       dislikes: post.dislikes.map(id => id.toString()),
-      points: user.points,
+      points: author.points,
       pointsChange,
     });
   } catch (err) {
@@ -321,20 +320,23 @@ const unlikePost = async (req, res) => {
 
     if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("author");
     if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    const author = await User.findById(post.author._id);
+    if (!author) return res.status(404).json({ message: "게시글 작성자를 찾을 수 없습니다." });
 
     if (post.likes.some(id => id.toString() === userId)) {
       post.likes = post.likes.filter(id => id.toString() !== userId);
-      user.points = Math.max(0, user.points - 3);
-      await post.save();
-      await user.save();
+      author.points = Math.max(0, author.points - 3);
+      await Promise.all([post.save(), author.save()]);
     }
 
-    res.json({ message: "좋아요 취소됨", likes: post.likes.map(id => id.toString()), points: user.points });
+    res.json({ 
+      message: "좋아요 취소됨", 
+      likes: post.likes.map(id => id.toString()), 
+      points: author.points 
+    });
   } catch (err) {
     res.status(500).json({ message: "서버 오류", error: err.message });
   }
@@ -347,38 +349,37 @@ const dislikePost = async (req, res) => {
 
     if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("author");
     if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    const author = await User.findById(post.author._id);
+    if (!author) return res.status(404).json({ message: "게시글 작성자를 찾을 수 없습니다." });
 
     let pointsChange = 0;
 
-    if (post.likes.some(id => id.toString() === userId)) {
+    if (post.likes.includes(userId)) {
       post.likes = post.likes.filter(id => id.toString() !== userId);
-      user.points = Math.max(0, user.points - 3);
+      author.points = Math.max(0, author.points - 3);
       pointsChange -= 3;
     }
 
-    if (post.dislikes.some(id => id.toString() === userId)) {
+    if (post.dislikes.includes(userId)) {
       post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
-      user.points += 1;
+      author.points += 1;
       pointsChange += 1;
     } else {
-      post.dislikes.push(new mongoose.Types.ObjectId(userId));
-      user.points = Math.max(0, user.points - 1);
+      post.dislikes.push(userId);
+      author.points = Math.max(0, author.points - 1);
       pointsChange -= 1;
     }
 
-    await post.save();
-    await user.save();
+    await Promise.all([post.save(), author.save()]);
 
-    res.json({
+    res.status(200).json({
       message: "싫어요 업데이트 완료",
       likes: post.likes.map(id => id.toString()),
       dislikes: post.dislikes.map(id => id.toString()),
-      points: user.points,
+      points: author.points,
       pointsChange,
     });
   } catch (err) {
@@ -393,24 +394,28 @@ const undislikePost = async (req, res) => {
 
     if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId).populate("author");
     if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
 
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    const author = await User.findById(post.author._id);
+    if (!author) return res.status(404).json({ message: "게시글 작성자를 찾을 수 없습니다." });
 
     if (post.dislikes.some(id => id.toString() === userId)) {
       post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
-      user.points += 1;
-      await post.save();
-      await user.save();
+      author.points += 1;
+      await Promise.all([post.save(), author.save()]);
     }
 
-    res.json({ message: "싫어요 취소됨", dislikes: post.dislikes.map(id => id.toString()), points: user.points });
+    res.json({ 
+      message: "싫어요 취소됨", 
+      dislikes: post.dislikes.map(id => id.toString()), 
+      points: author.points 
+    });
   } catch (err) {
     res.status(500).json({ message: "서버 오류", error: err.message });
   }
 };
+
 
 module.exports = { 
   createPost, 
