@@ -13,25 +13,32 @@ const addComment = async (req, res) => {
     }
 
     const newComment = new Comment({
-      postId: new mongoose.Types.ObjectId(postId),
-      userId: new mongoose.Types.ObjectId(userId),
+      postId,
+      userId,
       content,
     });
-
-    await newComment.save();
 
     const user = await User.findById(userId);
     if (user) {
       user.points += 1;
-      await user.save();
     }
 
-    res.status(201).json({ message: "댓글이 작성되었습니다.", comment: newComment });
+    await Promise.all([newComment.save(), user?.save()]);
+
+    const populatedComment = await newComment.populate("userId", "username");
+
+    res.status(201).json({ 
+      message: "댓글이 작성되었습니다.", 
+      comment: populatedComment, 
+      points: user?.points || 0 
+    });
   } catch (error) {
     console.error("댓글 작성 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
   }
 };
+
+
 const getComments = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -102,15 +109,14 @@ const deleteComment = async (req, res) => {
     if (!comment) return res.status(404).json({ message: "댓글을 찾을 수 없습니다." });
     if (comment.userId.toString() !== userId) return res.status(403).json({ message: "삭제 권한이 없습니다." });
 
-    await comment.deleteOne();
-
     const user = await User.findById(userId);
     if (user) {
       user.points = Math.max(0, user.points - 1);
-      await user.save();
     }
 
-    res.status(200).json({ message: "댓글이 삭제되었습니다." });
+    await Promise.all([comment.deleteOne(), user?.save()]);
+
+    res.status(200).json({ message: "댓글이 삭제되었습니다.", points: user?.points || 0 });
   } catch (error) {
     console.error("댓글 삭제 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
