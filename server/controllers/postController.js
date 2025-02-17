@@ -113,15 +113,22 @@ const getPosts = async (req, res) => {
       .populate("author", "username")
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limitNum);
+      .limit(limitNum)
+      .lean()
+      .exec();
 
-    res.json({ posts, totalPosts, page: pageNum, limit: limitNum });
+    const transformedPosts = posts.map(post => ({
+      ...post,
+      likes: Array.isArray(post.likes) ? post.likes.map(id => id.toString()) : [],
+      dislikes: Array.isArray(post.dislikes) ? post.dislikes.map(id => id.toString()) : []
+    }));
+
+    res.json({ posts: transformedPosts, totalPosts, page: pageNum, limit: limitNum });
   } catch (error) {
     console.error("🔥 게시글 목록 불러오기 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
   }
 };
-
 
 const getPostDetail = async (req, res) => {
   try {
@@ -147,8 +154,20 @@ const getPostDetail = async (req, res) => {
           createdAt: 1,
           "author._id": 1,
           "author.username": 1,
-          likes: { $ifNull: ["$likes", []] },
-          dislikes: { $ifNull: ["$dislikes", []] }
+          likes: {
+            $map: {
+              input: { $ifNull: ["$likes", []] },
+              as: "like",
+              in: { $toString: "$$like" }
+            }
+          },
+          dislikes: {
+            $map: {
+              input: { $ifNull: ["$dislikes", []] },
+              as: "dislike",
+              in: { $toString: "$$dislike" }
+            }
+          }
         }
       }
     ]);
@@ -251,89 +270,145 @@ const deletePostImage = async (req, res) => {
 
 const likePost = async (req, res) => {
   try {
-      const { postId } = req.params;
-      const { userId } = req.body;
+    const { postId } = req.params;
+    const { userId } = req.body;
 
-      if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+    if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
 
-      const post = await Post.findById(postId);
-      if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
 
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+
+    let pointsChange = 0;
+
+    if (post.dislikes.some(id => id.toString() === userId)) {
       post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
-      
-      if (post.likes.includes(userId)) {
-          post.likes = post.likes.filter(id => id.toString() !== userId);
-      } else {
-          post.likes.push(userId);
-      }
+      user.points += 1;
+      pointsChange += 1;
+    }
 
-      await post.save();
-      res.json({ message: '좋아요가 업데이트되었습니다.', likes: post.likes.length });
+    if (post.likes.some(id => id.toString() === userId)) {
+      post.likes = post.likes.filter(id => id.toString() !== userId);
+      user.points = Math.max(0, user.points - 3);
+      pointsChange -= 3;
+    } else {
+      post.likes.push(new mongoose.Types.ObjectId(userId));
+      user.points += 3;
+      pointsChange += 3;
+    }
+
+    await post.save();
+    await user.save();
+
+    res.json({
+      message: "좋아요 업데이트 완료",
+      likes: post.likes.map(id => id.toString()),
+      dislikes: post.dislikes.map(id => id.toString()),
+      points: user.points,
+      pointsChange,
+    });
   } catch (err) {
-      res.status(500).json({ message: '서버 오류', error: err.message });
+    res.status(500).json({ message: "서버 오류", error: err.message });
   }
 };
 
 const unlikePost = async (req, res) => {
   try {
-      const { postId } = req.params;
-      const { userId } = req.body;
+    const { postId } = req.params;
+    const { userId } = req.body;
 
-      if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+    if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
 
-      const post = await Post.findById(postId);
-      if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
 
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+
+    if (post.likes.some(id => id.toString() === userId)) {
       post.likes = post.likes.filter(id => id.toString() !== userId);
-
+      user.points = Math.max(0, user.points - 3);
       await post.save();
-      res.json({ message: '좋아요가 취소되었습니다.', likes: post.likes.length });
+      await user.save();
+    }
+
+    res.json({ message: "좋아요 취소됨", likes: post.likes.map(id => id.toString()), points: user.points });
   } catch (err) {
-      res.status(500).json({ message: '서버 오류', error: err.message });
+    res.status(500).json({ message: "서버 오류", error: err.message });
   }
 };
 
 const dislikePost = async (req, res) => {
   try {
-      const { postId } = req.params;
-      const { userId } = req.body;
+    const { postId } = req.params;
+    const { userId } = req.body;
 
-      if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+    if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
 
-      const post = await Post.findById(postId);
-      if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
 
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+
+    let pointsChange = 0;
+
+    if (post.likes.some(id => id.toString() === userId)) {
       post.likes = post.likes.filter(id => id.toString() !== userId);
-      
-      if (post.dislikes.includes(userId)) {
-          post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
-      } else {
-          post.dislikes.push(userId);
-      }
+      user.points = Math.max(0, user.points - 3);
+      pointsChange -= 3;
+    }
 
-      await post.save();
-      res.json({ message: '싫어요가 업데이트되었습니다.', dislikes: post.dislikes.length });
+    if (post.dislikes.some(id => id.toString() === userId)) {
+      post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
+      user.points += 1;
+      pointsChange += 1;
+    } else {
+      post.dislikes.push(new mongoose.Types.ObjectId(userId));
+      user.points = Math.max(0, user.points - 1);
+      pointsChange -= 1;
+    }
+
+    await post.save();
+    await user.save();
+
+    res.json({
+      message: "싫어요 업데이트 완료",
+      likes: post.likes.map(id => id.toString()),
+      dislikes: post.dislikes.map(id => id.toString()),
+      points: user.points,
+      pointsChange,
+    });
   } catch (err) {
-      res.status(500).json({ message: '서버 오류', error: err.message });
+    res.status(500).json({ message: "서버 오류", error: err.message });
   }
 };
 
 const undislikePost = async (req, res) => {
   try {
-      const { postId } = req.params;
-      const { userId } = req.body;
+    const { postId } = req.params;
+    const { userId } = req.body;
 
-      if (!userId) return res.status(400).json({ message: 'userId가 필요합니다.' });
+    if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
 
-      const post = await Post.findById(postId);
-      if (!post) return res.status(404).json({ message: '게시글을 찾을 수 없습니다.' });
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
 
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+
+    if (post.dislikes.some(id => id.toString() === userId)) {
       post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
-
+      user.points += 1;
       await post.save();
-      res.json({ message: '싫어요가 취소되었습니다.', dislikes: post.dislikes.length });
+      await user.save();
+    }
+
+    res.json({ message: "싫어요 취소됨", dislikes: post.dislikes.map(id => id.toString()), points: user.points });
   } catch (err) {
-      res.status(500).json({ message: '서버 오류', error: err.message });
+    res.status(500).json({ message: "서버 오류", error: err.message });
   }
 };
 
