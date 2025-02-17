@@ -13,6 +13,8 @@ import {
 } from "@mui/material";
 import { Edit, Delete, ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
+import getAnimalIcon from "../utils/getAnimalIcon";
+
 
 interface Comment {
   _id: string;
@@ -30,9 +32,14 @@ interface CommentSectionProps {
   postId: string;
 }
 
+interface AuthorPoints {
+  [username: string]: number;
+}
+
 const CommentSection = ({ postId }: CommentSectionProps) => {
   const { token, user, updatePoints } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
+  const [authorPoints, setAuthorPoints] = useState<AuthorPoints>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [content, setContent] = useState<string>("");
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
@@ -51,6 +58,9 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       );
       setComments(res.data.comments);
       setTotalPages(Math.ceil(res.data.totalComments / commentsPerPage));
+
+      const usernames = [...new Set(res.data.comments.map((comment) => comment.author.username))];
+      fetchAuthorPoints(usernames);
     } catch (error) {
       console.error("댓글 불러오기 실패:", error);
     } finally {
@@ -61,6 +71,25 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   useEffect(() => {
     refreshComments();
   }, [postId, refreshComments]);
+
+  const fetchAuthorPoints = async (usernames: string[]) => {
+    try {
+      const responses = await Promise.all(
+        usernames.map((username) =>
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/user/get-username`, { params: { username } })
+        )
+      );
+
+      const newAuthorPoints: AuthorPoints = {};
+      responses.forEach((res) => {
+        newAuthorPoints[res.data.username] = res.data.points;
+      });
+
+      setAuthorPoints((prev) => ({ ...prev, ...newAuthorPoints }));
+    } catch (err) {
+      console.error("작성자 포인트 불러오기 실패:", err);
+    }
+  };
 
   const handleAddComment = async () => {
     if (!token || !content.trim()) return;
@@ -257,7 +286,20 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       {comments.map((comment) => (
         <Card key={comment._id} sx={{ mb: 1, p: 1, borderRadius: 1, boxShadow: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography fontWeight="bold" sx={{ fontSize: '0.875rem' }}>{comment.author.username}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {authorPoints[comment.author.username] !== undefined && (
+                <img 
+                  src={getAnimalIcon(authorPoints[comment.author.username])} 
+                  alt="User rank icon" 
+                  width={20} 
+                  height={20} 
+                  style={{ verticalAlign: "middle", margin: "0 4px" }}
+                />
+              )}
+              <Typography fontWeight="bold" sx={{ fontSize: '0.875rem' }}>
+                {comment.author.username}
+              </Typography>
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {user?.id === comment.author._id && (
                 <Box sx={{ display: 'flex', gap: 0.5, pr: 1 }}>
