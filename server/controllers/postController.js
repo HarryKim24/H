@@ -189,13 +189,16 @@ const deletePost = async (req, res) => {
       return res.status(403).json({ message: "삭제 권한이 없습니다." });
     }
 
-    await post.deleteOne();
+    if (post.imageUrl) {
+      await deleteImageFromCloudinary(post.imageUrl);
+    }
 
     const user = await User.findById(req.user.id);
     if (user) {
       user.points = Math.max(0, user.points - 3);
-      await user.save();
     }
+
+    await Promise.all([post.deleteOne(), user?.save()]);
 
     res.sendStatus(204);
   } catch (error) {
