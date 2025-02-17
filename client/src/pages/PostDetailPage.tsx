@@ -36,18 +36,21 @@ const PostDetailPage = () => {
 
   useEffect(() => {
     const fetchPost = async () => {
+      if (!postId) return;
+  
       try {
         const res = await axios.get<Post>(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`);
         setPost(res.data);
       } catch (err) {
         console.error("게시글 불러오기 실패:", err);
+        setPost(null);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchPost();
-  }, [postId, user]);
+  }, [postId]);
 
   const handleDelete = async () => {
     if (!token || !post || !user || String(post.author._id) !== String(user.id)) {
@@ -57,15 +60,14 @@ const PostDetailPage = () => {
   
     try {
       await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${post._id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
   
       if (user.points > 0) {
         updatePoints(-3);
       }
   
+      setPost(null);
       alert("게시글이 삭제되었습니다.");
       navigate("/");
     } catch (err) {

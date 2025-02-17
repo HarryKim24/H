@@ -209,10 +209,6 @@ const deletePost = async (req, res) => {
       return res.status(403).json({ message: "삭제 권한이 없습니다." });
     }
 
-    if (post.imageUrl) {
-      await deleteImageFromCloudinary(post.imageUrl);
-    }
-
     await post.deleteOne();
 
     const user = await User.findById(req.user.id);
@@ -221,7 +217,7 @@ const deletePost = async (req, res) => {
       await user.save();
     }
 
-    res.json({ message: "게시글이 삭제되었습니다." });
+    res.sendStatus(204);
   } catch (error) {
     console.error("게시글 삭제 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
