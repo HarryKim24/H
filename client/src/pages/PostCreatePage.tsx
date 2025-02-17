@@ -7,7 +7,7 @@ import { Delete } from "@mui/icons-material";
 
 const PostCreatePage = () => {
   const navigate = useNavigate();
-  const { token } = useAuthStore();
+  const { token, user, updatePoints } = useAuthStore();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -67,6 +67,11 @@ const PostCreatePage = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      if (user) {
+        updatePoints(3);
+        console.log(`새로운 포인트: ${user.points + 3}`);
+      }
 
       navigate("/");
     } catch (err) {

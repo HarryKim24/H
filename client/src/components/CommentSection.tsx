@@ -31,7 +31,7 @@ interface CommentSectionProps {
 }
 
 const CommentSection = ({ postId }: CommentSectionProps) => {
-  const { token, user } = useAuthStore();
+  const { token, user, updatePoints } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [content, setContent] = useState<string>("");
@@ -64,13 +64,20 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
 
   const handleAddComment = async () => {
     if (!token || !content.trim()) return;
-    await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`,
-      { content },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setContent("");
-    refreshComments();
+  
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`,
+        { content },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setContent("");
+      refreshComments();
+      updatePoints(1);
+      
+    } catch (error) {
+      console.error("댓글 작성 실패:", error);
+    }
   };
 
   const handleUpdateComment = async (commentId: string) => {
@@ -87,12 +94,22 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
 
   const handleDeleteComment = async (commentId: string) => {
     if (!token || !window.confirm("이 댓글을 삭제하시겠습니까?")) return;
-    await axios.delete(
-      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    refreshComments();
+  
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      refreshComments();
+  
+      if (user && user.points > 0) {
+        updatePoints(-1);
+      }
+    } catch (error) {
+      console.error("댓글 삭제 실패:", error);
+    }
   };
+  
 
   const handleLike = async (commentId: string) => {
     if (!token) {
@@ -206,7 +223,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
         })
       : `${createdDate.getFullYear()}.${String(createdDate.getMonth() + 1).padStart(2, '0')}.${String(createdDate.getDate()).padStart(2, '0')}`;
   };
-
   
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 

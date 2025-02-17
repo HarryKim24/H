@@ -28,7 +28,7 @@ interface Post {
 const PostDetailPage = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
-  const { token, user } = useAuthStore();
+  const { token, user, updatePoints } = useAuthStore();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -36,32 +36,43 @@ const PostDetailPage = () => {
 
   useEffect(() => {
     const fetchPost = async () => {
+      if (!postId) return;
+  
       try {
         const res = await axios.get<Post>(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`);
         setPost(res.data);
       } catch (err) {
         console.error("게시글 불러오기 실패:", err);
+        setPost(null);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchPost();
-  }, [postId, user]);
+  }, [postId]);
 
   const handleDelete = async () => {
     if (!token || !post || !user || String(post.author._id) !== String(user.id)) {
       alert("삭제 권한이 없습니다.");
       return;
     }
-
+  
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${post._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
+  
+      if (user.points > 0) {
+        updatePoints(-3);
+      }
+  
+      setPost(null);
+      alert("게시글이 삭제되었습니다.");
       navigate("/");
     } catch (err) {
       console.error("게시글 삭제 실패:", err);
+      alert("게시글 삭제에 실패했습니다.");
     }
   };
 
@@ -72,21 +83,18 @@ const PostDetailPage = () => {
     }
   
     try {
-      const hasLiked = post?.likes.includes(user.id);
-      if (hasLiked) {
-        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/like`, {
-          data: { userId: user.id }
-        });
-      } else {
-        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/like`, { userId: user.id });
-      }
+      const url = `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/like`;
+      const { data } = await axios.post(url, { userId: user.id });
+  
+      updatePoints(data.pointsChange);
   
       setPost((prevPost) => {
         if (!prevPost) return null;
-        const updatedLikes = hasLiked
-          ? prevPost.likes.filter((id) => id !== user.id)
-          : [...prevPost.likes, user.id];
-        return { ...prevPost, likes: updatedLikes, dislikes: prevPost.dislikes.filter((id) => id !== user.id) };
+        return { 
+          ...prevPost, 
+          likes: data.likes.map(String),
+          dislikes: data.dislikes.map(String)
+        };
       });
     } catch (error) {
       console.error("좋아요 처리 실패:", error);
@@ -100,26 +108,24 @@ const PostDetailPage = () => {
     }
   
     try {
-      const hasDisliked = post?.dislikes.includes(user.id);
-      if (hasDisliked) {
-        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/dislike`, {
-          data: { userId: user.id }
-        });
-      } else {
-        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/dislike`, { userId: user.id });
-      }
+      const url = `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/dislike`;
+      const { data } = await axios.post(url, { userId: user.id });
+  
+      updatePoints(data.pointsChange);
   
       setPost((prevPost) => {
         if (!prevPost) return null;
-        const updatedDislikes = hasDisliked
-          ? prevPost.dislikes.filter((id) => id !== user.id)
-          : [...prevPost.dislikes, user.id];
-        return { ...prevPost, dislikes: updatedDislikes, likes: prevPost.likes.filter((id) => id !== user.id) };
+        return { 
+          ...prevPost, 
+          likes: data.likes.map(String),
+          dislikes: data.dislikes.map(String)
+        };
       });
     } catch (error) {
       console.error("싫어요 처리 실패:", error);
     }
   };
+  
 
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 5 }} />;
   if (!post) return <Typography sx={{ textAlign: "center", mt: 5 }}>게시글을 찾을 수 없습니다.</Typography>;
