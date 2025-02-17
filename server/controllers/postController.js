@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const User = require("../models/User");
 const Post = require('../models/Post');
 const cloudinary = require('../config/cloudinary');
 const multer = require("multer");
@@ -73,6 +74,15 @@ const createPost = async (req, res) => {
     });
 
     await newPost.save();
+
+    const user = await User.findById(req.user.id);
+    if (user) {
+      user.points += 3;
+      await user.save();
+    } else {
+      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    }
+
     res.status(201).json({ message: "게시글이 작성되었습니다.", post: newPost });
   } catch (error) {
     console.error("게시글 작성 오류:", error);
@@ -187,7 +197,6 @@ const updatePost = async (req, res) => {
   }
 };
 
-
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId);
@@ -205,6 +214,13 @@ const deletePost = async (req, res) => {
     }
 
     await post.deleteOne();
+
+    const user = await User.findById(req.user.id);
+    if (user) {
+      user.points = Math.max(0, user.points - 3);
+      await user.save();
+    }
+
     res.json({ message: "게시글이 삭제되었습니다." });
   } catch (error) {
     console.error("게시글 삭제 오류:", error);

@@ -28,7 +28,7 @@ interface Post {
 const PostDetailPage = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
-  const { token, user } = useAuthStore();
+  const { token, user, updatePoints } = useAuthStore();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -54,14 +54,23 @@ const PostDetailPage = () => {
       alert("삭제 권한이 없습니다.");
       return;
     }
-
+  
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${post._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+  
+      if (user.points > 0) {
+        updatePoints(-3);
+      }
+  
+      alert("게시글이 삭제되었습니다.");
       navigate("/");
     } catch (err) {
       console.error("게시글 삭제 실패:", err);
+      alert("게시글 삭제에 실패했습니다.");
     }
   };
 
