@@ -128,16 +128,34 @@ const likeComment = async (req, res) => {
     const { commentId } = req.params;
     const userId = req.user.id;
 
-    const comment = await Comment.findById(commentId);
+    const comment = await Comment.findById(commentId).populate("userId");
     if (!comment) return res.status(404).json({ message: "댓글을 찾을 수 없습니다." });
+
+    const author = await User.findById(comment.userId);
+    if (!author) return res.status(404).json({ message: "작성자를 찾을 수 없습니다." });
+
+    let pointsChange = 0;
+
+    if (comment.dislikes.includes(userId)) {
+      comment.dislikes = comment.dislikes.filter((id) => id.toString() !== userId);
+      author.points += 1;
+      pointsChange += 1;
+    }
 
     if (!comment.likes.includes(userId)) {
       comment.likes.push(userId);
-      comment.dislikes = comment.dislikes.filter((id) => id.toString() !== userId);
+      author.points += 3;
+      pointsChange += 3;
     }
 
-    await comment.save();
-    res.status(200).json({ message: "좋아요가 추가되었습니다.", comment });
+    await Promise.all([comment.save(), author.save()]);
+
+    res.status(200).json({
+      message: "좋아요가 추가되었습니다.",
+      comment,
+      points: author.points,
+      pointsChange,
+    });
   } catch (error) {
     console.error("좋아요 추가 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
@@ -149,13 +167,23 @@ const unlikeComment = async (req, res) => {
     const { commentId } = req.params;
     const userId = req.user.id;
 
-    const comment = await Comment.findById(commentId);
+    const comment = await Comment.findById(commentId).populate("userId");
     if (!comment) return res.status(404).json({ message: "댓글을 찾을 수 없습니다." });
 
-    comment.likes = comment.likes.filter((id) => id.toString() !== userId);
-    await comment.save();
+    const author = await User.findById(comment.userId);
+    if (!author) return res.status(404).json({ message: "작성자를 찾을 수 없습니다." });
 
-    res.status(200).json({ message: "좋아요가 취소되었습니다.", comment });
+    if (comment.likes.includes(userId)) {
+      comment.likes = comment.likes.filter((id) => id.toString() !== userId);
+      author.points = Math.max(0, author.points - 3);
+      await Promise.all([comment.save(), author.save()]);
+    }
+
+    res.status(200).json({
+      message: "좋아요가 취소되었습니다.",
+      comment,
+      points: author.points,
+    });
   } catch (error) {
     console.error("좋아요 취소 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
@@ -167,16 +195,34 @@ const dislikeComment = async (req, res) => {
     const { commentId } = req.params;
     const userId = req.user.id;
 
-    const comment = await Comment.findById(commentId);
+    const comment = await Comment.findById(commentId).populate("userId");
     if (!comment) return res.status(404).json({ message: "댓글을 찾을 수 없습니다." });
+
+    const author = await User.findById(comment.userId);
+    if (!author) return res.status(404).json({ message: "작성자를 찾을 수 없습니다." });
+
+    let pointsChange = 0;
+
+    if (comment.likes.includes(userId)) {
+      comment.likes = comment.likes.filter((id) => id.toString() !== userId);
+      author.points = Math.max(0, author.points - 3);
+      pointsChange -= 3;
+    }
 
     if (!comment.dislikes.includes(userId)) {
       comment.dislikes.push(userId);
-      comment.likes = comment.likes.filter((id) => id.toString() !== userId);
+      author.points = Math.max(0, author.points - 1);
+      pointsChange -= 1;
     }
 
-    await comment.save();
-    res.status(200).json({ message: "싫어요가 추가되었습니다.", comment });
+    await Promise.all([comment.save(), author.save()]);
+
+    res.status(200).json({
+      message: "싫어요가 추가되었습니다.",
+      comment,
+      points: author.points,
+      pointsChange,
+    });
   } catch (error) {
     console.error("싫어요 추가 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
@@ -188,18 +234,29 @@ const undislikeComment = async (req, res) => {
     const { commentId } = req.params;
     const userId = req.user.id;
 
-    const comment = await Comment.findById(commentId);
+    const comment = await Comment.findById(commentId).populate("userId");
     if (!comment) return res.status(404).json({ message: "댓글을 찾을 수 없습니다." });
 
-    comment.dislikes = comment.dislikes.filter((id) => id.toString() !== userId);
-    await comment.save();
+    const author = await User.findById(comment.userId);
+    if (!author) return res.status(404).json({ message: "작성자를 찾을 수 없습니다." });
 
-    res.status(200).json({ message: "싫어요가 취소되었습니다.", comment });
+    if (comment.dislikes.includes(userId)) {
+      comment.dislikes = comment.dislikes.filter((id) => id.toString() !== userId);
+      author.points += 1;
+      await Promise.all([comment.save(), author.save()]);
+    }
+
+    res.status(200).json({
+      message: "싫어요가 취소되었습니다.",
+      comment,
+      points: author.points,
+    });
   } catch (error) {
     console.error("싫어요 취소 오류:", error);
     res.status(500).json({ message: "서버 오류", error });
   }
 };
+
 
 module.exports = {
   addComment,
