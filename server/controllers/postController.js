@@ -2,46 +2,7 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const Post = require('../models/Post');
 const cloudinary = require('../config/cloudinary');
-const multer = require("multer");
-
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
-const uploadImageToCloudinary = (fileBuffer) => {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: "posts" },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result.secure_url);
-      }
-    );
-    uploadStream.end(fileBuffer);
-  });
-};
-
-const deleteImageFromCloudinary = (imageUrl) => {
-  return new Promise((resolve, reject) => {
-    if (!imageUrl) return resolve();
-
-    try {
-      const urlParts = imageUrl.split("/");
-      const filenameWithExtension = urlParts[urlParts.length - 1];
-      const filenameWithoutExtension = filenameWithExtension.split(".")[0];
-
-      const folderName = "posts";
-      const publicId = `${folderName}/${filenameWithoutExtension}`;
-
-      cloudinary.uploader.destroy(publicId, (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      });
-    } catch (error) {
-      console.error("Cloudinary publicId 추출 오류:", error);
-      reject(error);
-    }
-  });
-};
+const { uploadImageToCloudinary, deleteImageFromCloudinary } = require('../utils/cloudinaryUtils');
 
 const createPost = async (req, res) => {
   try {
@@ -228,13 +189,16 @@ const deletePost = async (req, res) => {
       return res.status(403).json({ message: "삭제 권한이 없습니다." });
     }
 
-    await post.deleteOne();
+    if (post.imageUrl) {
+      await deleteImageFromCloudinary(post.imageUrl);
+    }
 
     const user = await User.findById(req.user.id);
     if (user) {
       user.points = Math.max(0, user.points - 3);
-      await user.save();
     }
+
+    await Promise.all([post.deleteOne(), user?.save()]);
 
     res.sendStatus(204);
   } catch (error) {
