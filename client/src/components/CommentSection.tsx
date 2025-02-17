@@ -71,15 +71,16 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
         { content },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+  
       setContent("");
       refreshComments();
       updatePoints(1);
-      
     } catch (error) {
       console.error("댓글 작성 실패:", error);
     }
   };
-
+  
+  
   const handleUpdateComment = async (commentId: string) => {
     if (!token || !editContent.trim()) return;
     await axios.put(
@@ -100,16 +101,13 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
         `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      refreshComments();
   
-      if (user && user.points > 0) {
-        updatePoints(-1);
-      }
+      refreshComments();
+      updatePoints(-1);
     } catch (error) {
       console.error("댓글 삭제 실패:", error);
     }
-  };
-  
+  };  
 
   const handleLike = async (commentId: string) => {
     if (!token) {

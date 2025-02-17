@@ -86,8 +86,6 @@ const PostDetailPage = () => {
       const url = `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/like`;
       const { data } = await axios.post(url, { userId: user.id });
   
-      updatePoints(data.pointsChange);
-  
       setPost((prevPost) => {
         if (!prevPost) return null;
         return { 
@@ -101,6 +99,7 @@ const PostDetailPage = () => {
     }
   };
   
+  
   const handleDislike = async () => {
     if (!user) {
       alert("로그인이 필요합니다.");
@@ -110,8 +109,6 @@ const PostDetailPage = () => {
     try {
       const url = `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/dislike`;
       const { data } = await axios.post(url, { userId: user.id });
-  
-      updatePoints(data.pointsChange);
   
       setPost((prevPost) => {
         if (!prevPost) return null;
@@ -125,7 +122,6 @@ const PostDetailPage = () => {
       console.error("싫어요 처리 실패:", error);
     }
   };
-  
 
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 5 }} />;
   if (!post) return <Typography sx={{ textAlign: "center", mt: 5 }}>게시글을 찾을 수 없습니다.</Typography>;
