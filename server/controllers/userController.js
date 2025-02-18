@@ -19,6 +19,27 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const getUsername = async (req, res) => {
+  try {
+    const { username } = req.query;
+    if (!username) {
+      return res.status(400).json({ message: "유효한 사용자명을 입력하세요." });
+    }
+
+    const user = await User.findOne({ username }).select("username points");
+    if (!user) {
+      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    }
+
+    res.json({
+      username: user.username,
+      points: user.points,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "서버 오류", error });
+  }
+};
+
 const updateUserProfile = async (req, res) => {
   try {
     const { username, currentPassword, newPassword } = req.body;
@@ -80,4 +101,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUserProfile, updateUserProfile, deleteUser };
+module.exports = { getUserProfile, updateUserProfile, deleteUser, getUsername };
