@@ -39,7 +39,7 @@ export const lightTheme = createTheme({
       main: "#ffa726"
     },
     error: {
-      main: "#d32f2f"
+      main: "#d32f2f",
     },
     success: {
       main: "#388e3c"

@@ -8,12 +8,13 @@ import {
   IconButton, 
   Pagination,
 } from "@mui/material";
-import { Edit, Delete, ThumbUp, ThumbDown } from "@mui/icons-material";
+import { Edit, ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 import getAnimalIcon from "../utils/getAnimalIcon";
 import { formatCommentDate } from "../utils/commentDateUtils";
 import CommentAdd from "./CommentAdd";
 import CommentEdit from "./CommentEdit";
+import CommentDelete from "./CommentDelete";
 
 
 interface Comment {
@@ -37,7 +38,7 @@ interface AuthorPoints {
 }
 
 const CommentSection = ({ postId }: CommentSectionProps) => {
-  const { token, user, updatePoints } = useAuthStore();
+  const { token, user } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [authorPoints, setAuthorPoints] = useState<AuthorPoints>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -84,22 +85,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       setAuthorPoints((prev) => ({ ...prev, ...newAuthorPoints }));
     } catch (err) {
       console.error("작성자 포인트 불러오기 실패:", err);
-    }
-  };  
-
-  const handleDeleteComment = async (commentId: string) => {
-    if (!token || !window.confirm("이 댓글을 삭제하시겠습니까?")) return;
-  
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-  
-      refreshComments();
-      updatePoints(-1);
-    } catch (error) {
-      console.error("댓글 삭제 실패:", error);
     }
   };  
 
@@ -226,6 +211,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                 {comment.author.username}
               </Typography>
             </Box>
+            
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {user?.id === comment.author._id && (
                 <Box sx={{ display: 'flex', gap: 0.5, pr: 1 }}>
@@ -234,12 +220,14 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                   }}>
                     <Edit fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleDeleteComment(comment._id)}>
-                    <Delete fontSize="small" color="error" />
-                  </IconButton>
+
+                  <CommentDelete
+                    postId={postId}
+                    commentId={comment._id}
+                    refreshComments={refreshComments}
+                  />
                 </Box>
               )}
-
               <Box>
                 <IconButton
                   size="small"
