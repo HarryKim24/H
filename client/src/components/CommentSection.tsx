@@ -262,7 +262,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       </Box>
       
       {comments.map((comment) => (
-        <Card key={comment._id}>
+        <Card key={comment._id} sx={{ p: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {authorPoints[comment.author.username] !== undefined && (
@@ -274,7 +274,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                   style={{ verticalAlign: "middle", margin: "0 4px" }}
                 />
               )}
-              <Typography fontWeight="bold" sx={{ fontSize: '0.875rem' }}>
+              <Typography fontWeight="bold" sx={{ fontSize: '1rem' }}>
                 {comment.author.username}
               </Typography>
             </Box>
@@ -345,8 +345,11 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
             </>
           ) : (
             <>
-              <Typography sx={{ whiteSpace: 'pre-wrap' }}>{comment.content}</Typography>
-              <Typography variant="caption" color="text.disabled">
+              <Typography sx={{ pl: 1 }}>{comment.content}</Typography>
+              <Typography 
+                variant="caption" color="text.disabled"
+                sx={{ pl: 1 }}
+              >
                 {formatCommentDate(comment.createdAt)}
               </Typography>
             </>
