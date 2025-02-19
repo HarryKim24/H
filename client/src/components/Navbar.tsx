@@ -2,7 +2,7 @@ import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
 import { useContext } from "react";
-import { ThemeContext } from "../store/ThemeContext";
+import { ThemeContext } from "../utils/ThemeContext";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
 
 const Navbar = () => {
