@@ -2,7 +2,7 @@ import { useState } from "react";
 import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, useTheme } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import axios from "axios";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 
 interface CommentDeleteProps {
   postId: string;

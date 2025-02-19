@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, Button, TextField } from "@mui/material";
 import axios from "axios";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 
 interface CommentEditProps {
   postId: string;

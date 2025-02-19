@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 import { Container, TextField, Button, Typography, Box, IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";

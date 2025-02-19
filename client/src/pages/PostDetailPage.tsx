@@ -6,7 +6,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { ThumbUp, ThumbDown, Edit, Delete } from "@mui/icons-material";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 import CommentSection from "../components/CommentSection";
 import { formatPostDate } from "../utils/postDateUtils";
 import getAnimalIcon from "../utils/getAnimalIcon"; 

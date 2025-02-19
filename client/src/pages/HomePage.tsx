@@ -3,7 +3,7 @@ import axios from "axios";
 import { Container, Card, CardContent, Typography, CircularProgress, Button, Box, Divider, Pagination } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ThumbUp, ThumbDown } from "@mui/icons-material";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 import { useTheme } from "@mui/material/styles";
 import { formatPostDate } from "../utils/postDateUtils";
 import getAnimalIcon from "../utils/getAnimalIcon";

@@ -9,7 +9,7 @@ import {
   Pagination,
 } from "@mui/material";
 import { Edit, ThumbUp, ThumbDown } from "@mui/icons-material";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 import getAnimalIcon from "../utils/getAnimalIcon";
 import { formatCommentDate } from "../utils/commentDateUtils";
 import CommentAdd from "./CommentAdd";
