@@ -3,15 +3,17 @@ import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, Di
 import { Delete } from "@mui/icons-material";
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
+import { useCommentStore } from "../store/commentStore";
 
 interface CommentDeleteProps {
   postId: string;
   commentId: string;
-  refreshComments: () => void;
+  authorUsername: string;
 }
 
-const CommentDelete = ({ postId, commentId, refreshComments }: CommentDeleteProps) => {
-  const { token, updatePoints } = useAuthStore();
+const CommentDelete = ({ postId, commentId, authorUsername }: CommentDeleteProps) => {
+  const { token } = useAuthStore();
+  const { fetchComments } = useCommentStore();
   const [open, setOpen] = useState<boolean>(false);
   const theme = useTheme();
 
@@ -25,8 +27,14 @@ const CommentDelete = ({ postId, commentId, refreshComments }: CommentDeleteProp
       );
 
       setOpen(false);
-      refreshComments();
-      updatePoints(-1);
+      fetchComments(postId);
+
+      useCommentStore.setState((state) => ({
+        authorPoints: {
+          ...state.authorPoints,
+          [authorUsername]: (state.authorPoints[authorUsername] || 0) - 1,
+        },
+      }));
     } catch (error) {
       console.error("댓글 삭제 실패:", error);
     }
@@ -52,7 +60,7 @@ const CommentDelete = ({ postId, commentId, refreshComments }: CommentDeleteProp
             sx={{ 
               backgroundColor: theme.palette.error.main ,
               "&:hover": {
-                backgroundColor: theme.palette.error.main,
+                backgroundColor: theme.palette.error.dark,
               },
             }}
           >삭제</Button>

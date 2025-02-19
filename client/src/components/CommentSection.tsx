@@ -77,7 +77,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                       <Edit fontSize="small" />
                     </IconButton>
 
-                    <CommentDelete postId={postId} commentId={comment._id} refreshComments={() => fetchComments(postId)} />
+                    <CommentDelete postId={postId} commentId={comment._id} authorUsername={comment.author.username} />
                   </Box>
                 )}
                 <Box sx={{ display: "flex" }}>
