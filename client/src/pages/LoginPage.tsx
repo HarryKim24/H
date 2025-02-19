@@ -34,6 +34,7 @@ const LoginPage = () => {
             label="아이디"
             fullWidth
             margin="normal"
+            className="auth-textfield"
             value={user_id}
             onChange={(e) => setUserId(e.target.value)}
             autoComplete="username"
@@ -44,6 +45,7 @@ const LoginPage = () => {
             type={showPassword ? "text" : "password"}
             fullWidth
             margin="normal"
+            className="auth-textfield"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
