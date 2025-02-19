@@ -233,9 +233,6 @@ export const darkTheme = createTheme({
         root: {
           marginBottom: "8px",
           marginTop: "8px",
-          "& .MuiInputBase-root": {
-            padding: "10px",
-          },
         },
       },
     },
