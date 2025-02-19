@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import { 
   Box, 
   CircularProgress,
@@ -7,243 +6,124 @@ import {
   Card, 
   IconButton, 
   Pagination,
+  useTheme
 } from "@mui/material";
 import { Edit, ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../store/authStore";
+import { useCommentStore } from "../store/commentStore";
 import getAnimalIcon from "../utils/getAnimalIcon";
 import { formatCommentDate } from "../utils/commentDateUtils";
 import CommentAdd from "./CommentAdd";
 import CommentEdit from "./CommentEdit";
 import CommentDelete from "./CommentDelete";
 
-
-interface Comment {
-  _id: string;
-  content: string;
-  createdAt: string;
-  likes: string[];
-  dislikes: string[];
-  author: {
-    _id: string;
-    username: string;
-  };
-}
-
 interface CommentSectionProps {
   postId: string;
 }
 
-interface AuthorPoints {
-  [username: string]: number;
-}
-
 const CommentSection = ({ postId }: CommentSectionProps) => {
+  const theme = useTheme();
   const { token, user } = useAuthStore();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [authorPoints, setAuthorPoints] = useState<AuthorPoints>({});
-  const [loading, setLoading] = useState<boolean>(true);
+  const {
+    comments, 
+    totalPages, 
+    currentPage, 
+    loading, 
+    fetchComments, 
+    likeComment, 
+    dislikeComment, 
+    unlikeComment, 
+    undislikeComment, 
+    setPage
+  } = useCommentStore();
+
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const commentsPerPage = 10;
-
-  const refreshComments = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get<{ comments: Comment[]; totalComments: number }>(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments?page=${currentPage}&limit=${commentsPerPage}`
-      );
-      setComments(res.data.comments);
-      setTotalPages(Math.ceil(res.data.totalComments / commentsPerPage));
-
-      const usernames = [...new Set(res.data.comments.map((comment) => comment.author.username))];
-      fetchAuthorPoints(usernames);
-    } catch (error) {
-      console.error("댓글 불러오기 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [postId, currentPage]);
 
   useEffect(() => {
-    refreshComments();
-  }, [postId, refreshComments]);
+    fetchComments(postId);
+  }, [postId, currentPage, fetchComments]);
 
-  const fetchAuthorPoints = async (usernames: string[]) => {
-    try {
-      const responses = await Promise.all(
-        usernames.map((username) =>
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/user/get-username`, { params: { username } })
-        )
-      );
-
-      const newAuthorPoints: AuthorPoints = {};
-      responses.forEach((res) => {
-        newAuthorPoints[res.data.username] = res.data.points;
-      });
-
-      setAuthorPoints((prev) => ({ ...prev, ...newAuthorPoints }));
-    } catch (err) {
-      console.error("작성자 포인트 불러오기 실패:", err);
-    }
-  };  
-
-  const handleLike = async (commentId: string) => {
-    if (!token) {
-      alert("로그인 후 이용해 주세요.");
-      return;
-    }
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, 
-        {}, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setComments((prevComments) =>
-        prevComments.map(comment =>
-          comment._id === commentId
-            ? {
-                ...comment,
-                likes: [...comment.likes, user?.id ?? ''],
-                dislikes: comment.dislikes.filter(id => id !== user?.id)
-              }
-            : comment
-        )
-      );
-    } catch (error) {
-      console.error("좋아요 실패:", error);
-    }
-  };
-  
-  const handleUnlike = async (commentId: string) => {
-    if (!token) {
-      alert("로그인 후 이용해 주세요.");
-      return;
-    }
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setComments((prevComments) =>
-        prevComments.map(comment =>
-          comment._id === commentId
-            ? { ...comment, likes: comment.likes.filter(id => id !== user?.id) }
-            : comment
-        )
-      );
-    } catch (error) {
-      console.error("좋아요 취소 실패:", error);
-    }
-  };
-  
-  const handleDislike = async (commentId: string) => {
-    if (!token) {
-      alert("로그인 후 이용해 주세요.");
-      return;
-    }
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, 
-        {}, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setComments((prevComments) =>
-        prevComments.map(comment =>
-          comment._id === commentId
-            ? {
-                ...comment,
-                dislikes: [...comment.dislikes, user?.id ?? ''],
-                likes: comment.likes.filter(id => id !== user?.id)
-              }
-            : comment
-        )
-      );
-    } catch (error) {
-      console.error("싫어요 실패:", error);
-    }
-  };
-  
-  const handleUndislike = async (commentId: string) => {
-    if (!token) {
-      alert("로그인 후 이용해 주세요.");
-      return;
-    }
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setComments((prevComments) =>
-        prevComments.map(comment =>
-          comment._id === commentId
-            ? { ...comment, dislikes: comment.dislikes.filter(id => id !== user?.id) }
-            : comment
-        )
-      );
-    } catch (error) {
-      console.error("싫어요 취소 실패:", error);
-    }
-  };  
-  
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
   return (
     <Box sx={{ mt: 6, width: "100%", pr: "48px" }}>
-      <Typography variant="h6">댓글</Typography>
+      <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>댓글</Typography>
 
-      <CommentAdd postId={postId} refreshComments={refreshComments} />
+      <CommentAdd postId={postId} refreshComments={() => fetchComments(postId)} />
       
       {comments.map((comment) => (
-        <Card key={comment._id}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Card key={comment._id} sx={{ p: 1, mb: 1, borderRadius: 1, boxShadow: 1 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {authorPoints[comment.author.username] !== undefined && (
-                <img 
-                  src={getAnimalIcon(authorPoints[comment.author.username])} 
-                  alt="User rank icon" 
-                  width={20} 
-                  height={20} 
-                  style={{ verticalAlign: "middle", margin: "0 4px" }}
-                />
-              )}
-              <Typography fontWeight="bold" sx={{ fontSize: '0.875rem' }}>
+              <img 
+                src={getAnimalIcon(comment.author.points ?? 0)} 
+                alt="User rank icon" 
+                width={24} 
+                height={24} 
+                style={{ verticalAlign: "middle", marginRight: 8 }}
+              />
+              <Typography fontWeight="bold" sx={{ fontSize: '1rem' }}>
                 {comment.author.username}
               </Typography>
             </Box>
             
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {user?.id === comment.author._id && (
-                <Box sx={{ display: 'flex', gap: 0.5, pr: 1 }}>
-                  <IconButton size="small" onClick={() => {
-                    setEditCommentId(comment._id);
-                  }}>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <IconButton size="small" onClick={() => setEditCommentId(comment._id)} sx={{ color: "primary.main" }}>
                     <Edit fontSize="small" />
                   </IconButton>
 
-                  <CommentDelete
-                    postId={postId}
-                    commentId={comment._id}
-                    refreshComments={refreshComments}
-                  />
+                  <CommentDelete postId={postId} commentId={comment._id} refreshComments={() => fetchComments(postId)} />
                 </Box>
               )}
-              <Box>
+              <Box sx={{ display: "flex" }}>
                 <IconButton
                   size="small"
-                  onClick={() => comment.likes.includes(user?.id ?? '') ? handleUnlike(comment._id) : handleLike(comment._id)}
-                  className={comment.likes.includes(user?.id ?? '') ? "like" : ""}
+                  onClick={() => {
+                    if (!token || !user?.id) {
+                      alert("로그인이 필요합니다.");
+                      return;
+                    }
+                    if (comment.likes.includes(user.id)) {
+                      unlikeComment(postId, comment._id, token, user.id);
+                    } else {
+                      likeComment(postId, comment._id, token, user.id);
+                    }
+                  }}
+                  sx={{
+                    color: comment.likes.includes(user?.id ?? '') 
+                      ? theme.palette.like.main
+                      : "text.secondary",
+                    transition: "color 0.2s",
+                  }}
                 >
                   <ThumbUp fontSize="small" />
-                  <Typography variant="caption" sx={{ ml: 0.25, fontSize: '0.7rem' }}>{comment.likes?.length ?? 0}</Typography>
+                  <Typography variant="caption" sx={{ ml: 0.5 }}>{comment.likes.length}</Typography>
                 </IconButton>
+
                 <IconButton
                   size="small"
-                  onClick={() => comment.dislikes.includes(user?.id ?? '') ? handleUndislike(comment._id) : handleDislike(comment._id)}
-                  className={comment.dislikes.includes(user?.id ?? '') ? "dislike" : ""}
+                  onClick={() => {
+                    if (!token || !user?.id) {
+                      alert("로그인이 필요합니다.");
+                      return;
+                    }
+                    if (comment.dislikes.includes(user.id)) {
+                      undislikeComment(postId, comment._id, token, user.id);
+                    } else {
+                      dislikeComment(postId, comment._id, token, user.id);
+                    }
+                  }}
+                  sx={{
+                    color: comment.dislikes.includes(user?.id ?? '') 
+                      ? theme.palette.dislike.main
+                      : "text.secondary",
+                    transition: "color 0.2s",
+                  }}
                 >
                   <ThumbDown fontSize="small" />
-                  <Typography variant="caption" sx={{ ml: 0.25, fontSize: '0.7rem' }}>{comment.dislikes?.length ?? 0}</Typography>
+                  <Typography variant="caption" sx={{ ml: 0.5 }}>{comment.dislikes.length}</Typography>
                 </IconButton>
               </Box>
             </Box>
@@ -255,11 +135,11 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
               commentId={comment._id}
               initialContent={comment.content}
               onCancel={() => setEditCommentId(null)}
-              refreshComments={refreshComments}
+              refreshComments={() => fetchComments(postId)}
             />
           ) : (
             <>
-              <Typography sx={{ whiteSpace: 'pre-wrap' }}>{comment.content}</Typography>
+              <Typography sx={{ whiteSpace: 'pre-wrap', mt: 1 }}>{comment.content}</Typography>
               <Typography variant="caption" color="text.disabled">
                 {formatCommentDate(comment.createdAt)}
               </Typography>
@@ -272,7 +152,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
         <Pagination 
           count={totalPages} 
           page={currentPage} 
-          onChange={(_, page) => setCurrentPage(page)}
+          onChange={(_, page) => setPage(page)}
           color="primary"
         />
       </Box>
