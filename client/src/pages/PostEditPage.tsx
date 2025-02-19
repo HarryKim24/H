@@ -130,7 +130,11 @@ const PostEditPage = () => {
 
         {preview && (
           <IconButton 
-            sx={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+            sx={{ 
+              backgroundColor: "rgba(0,0,0,0.4)" ,
+              border: "2px solid white",
+              "&:hover": { color: "rgba(0, 0, 0, 0.5)" }
+            }}
             onClick={handleDeleteImage}
           >
             <Delete sx={{ color: "white" }} />

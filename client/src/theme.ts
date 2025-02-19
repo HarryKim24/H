@@ -80,11 +80,53 @@ export const lightTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: "#e0e0e0", 
-          color: "#424242",
-          borderRadius: "12px",
-          boxShadow: "none",
+          marginBottom: "8px",
+          padding: "8px",
+          borderRadius: "8px",
           border: "1px solid #bdbdbd", 
+          boxShadow: "0px 1px 3px rgba(0,0,0,0.2)",
+          cursor: "pointer",
+          "&:hover": {
+            boxShadow: "0px 4px 6px rgba(0,0,0,0.15)",
+          },
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          "&.like": {
+            color: "#e53935",
+          },
+          "&.dislike": {
+            color: "#1e88e5",
+          },
+          "&.theme-toggle": {
+            color: "#ffffff",
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          marginBottom: "8px",
+          marginTop: "8px"
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#424242",
+          color: "#ffffff",
+        },
+      },
+    },
+    MuiToolbar: {
+      styleOverrides: {
+        root: {
+          minHeight: "56px",
         },
       },
     },
@@ -159,11 +201,56 @@ export const darkTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: "#424242",
-          color: "#e0e0e0",
-          borderRadius: "12px",
-          boxShadow: "none",
+          marginBottom: "8px",
+          padding: "8px",
+          borderRadius: "8px",
           border: "1px solid #757575",
+          boxShadow: "0px 1px 3px rgba(0,0,0,0.2)",
+          cursor: "pointer",
+          "&:hover": {
+            boxShadow: "0px 1px 3px rgba(175, 175, 175, 1)",
+          },
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          "&.like": {
+            color: "#ff5252",
+          },
+          "&.dislike": {
+            color: "#64b5f6",
+          },
+          "&.theme-toggle": {
+            color: "#ffcc00",
+          },
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          marginBottom: "8px",
+          marginTop: "8px",
+          "& .MuiInputBase-root": {
+            padding: "10px",
+          },
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#212121",
+          color: "#ffffff",
+        },
+      },
+    },
+    MuiToolbar: {
+      styleOverrides: {
+        root: {
+          minHeight: "56px",
         },
       },
     },

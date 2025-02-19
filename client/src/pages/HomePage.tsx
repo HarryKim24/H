@@ -190,7 +190,6 @@ const HomePage = () => {
         posts.map((post) => (
           <Card 
             key={post._id} 
-            sx={{ borderRadius: 1, boxShadow: 1, mb: 1, cursor: "pointer" }} 
             onClick={() => navigate(`/posts/${post._id}`)}
           >
             <CardContent sx={{ p: 1, pl: 1.5, pr: 1.5, paddingBottom: "8px !important" }}>

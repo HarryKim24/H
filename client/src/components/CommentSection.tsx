@@ -9,7 +9,6 @@ import {
   Card, 
   IconButton, 
   Pagination,
-  useTheme
 } from "@mui/material";
 import { Edit, Delete, ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
@@ -47,8 +46,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const commentsPerPage = 10;
-
-  const theme = useTheme();
 
   const refreshComments = useCallback(async () => {
     try {
@@ -267,11 +264,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
           onChange={(e) => setContent(e.target.value)}
           variant="outlined"
           disabled={!token}
-          sx={{
-            '& .MuiInputBase-root': {
-              padding: '10px',
-            },
-          }}
         />
         <Button
           variant="contained"
@@ -284,7 +276,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       </Box>
       
       {comments.map((comment) => (
-        <Card key={comment._id} sx={{ mb: 1, p: 1, borderRadius: 1, boxShadow: 1 }}>
+        <Card key={comment._id}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {authorPoints[comment.author.username] !== undefined && (
@@ -319,9 +311,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                 <IconButton
                   size="small"
                   onClick={() => comment.likes.includes(user?.id ?? '') ? handleUnlike(comment._id) : handleLike(comment._id)}
-                  sx={{
-                    color: comment.likes.includes(user?.id ?? '') ? theme.palette.like.main : theme.palette.primary.main,
-                  }}
+                  className={comment.likes.includes(user?.id ?? '') ? "like" : ""}
                 >
                   <ThumbUp fontSize="small" />
                   <Typography variant="caption" sx={{ ml: 0.25, fontSize: '0.7rem' }}>{comment.likes?.length ?? 0}</Typography>
@@ -329,9 +319,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                 <IconButton
                   size="small"
                   onClick={() => comment.dislikes.includes(user?.id ?? '') ? handleUndislike(comment._id) : handleDislike(comment._id)}
-                  sx={{
-                    color: comment.dislikes.includes(user?.id ?? '') ? theme.palette.dislike.main : theme.palette.primary.main,
-                  }}
+                  className={comment.dislikes.includes(user?.id ?? '') ? "dislike" : ""}
                 >
                   <ThumbDown fontSize="small" />
                   <Typography variant="caption" sx={{ ml: 0.25, fontSize: '0.7rem' }}>{comment.dislikes?.length ?? 0}</Typography>
@@ -351,25 +339,18 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                 onChange={(e) => setEditContent(e.target.value)}
                 variant="outlined"
                 placeholder="댓글을 수정하세요"
-                sx={{
-                  mb: 1,
-                  mt: 1,
-                  '& .MuiInputBase-root': {
-                    padding: '10px',
-                  },
-                }}
               />
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                 <Button 
                   onClick={() => setEditCommentId(null)} 
                   variant="outlined" 
-                  color="inherit"
+                  color="primary"
                 >
                   취소
                 </Button>
                 <Button 
                   onClick={() => handleUpdateComment(comment._id)} 
-                  variant="contained" 
+                  variant="outlined" 
                   color="primary"
                 >
                   수정
