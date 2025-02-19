@@ -2,9 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { 
   Box, 
-  Button, 
-  CircularProgress, 
-  TextField, 
+  CircularProgress,
   Typography, 
   Card, 
   IconButton, 
@@ -15,6 +13,7 @@ import { useAuthStore } from "../context/authStore";
 import getAnimalIcon from "../utils/getAnimalIcon";
 import { formatCommentDate } from "../utils/commentDateUtils";
 import CommentAdd from "./CommentAdd";
+import CommentEdit from "./CommentEdit";
 
 
 interface Comment {
@@ -43,7 +42,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const [authorPoints, setAuthorPoints] = useState<AuthorPoints>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const commentsPerPage = 10;
@@ -88,18 +86,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
       console.error("작성자 포인트 불러오기 실패:", err);
     }
   };  
-  
-  const handleUpdateComment = async (commentId: string) => {
-    if (!token || !editContent.trim()) return;
-    await axios.put(
-      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
-      { content: editContent },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setEditCommentId(null);
-    setEditContent("");
-    refreshComments();
-  };
 
   const handleDeleteComment = async (commentId: string) => {
     if (!token || !window.confirm("이 댓글을 삭제하시겠습니까?")) return;
@@ -220,7 +206,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   return (
     <Box sx={{ mt: 6, width: "100%", pr: "48px" }}>
       <Typography variant="h6">댓글</Typography>
-      
+
       <CommentAdd postId={postId} refreshComments={refreshComments} />
       
       {comments.map((comment) => (
@@ -245,7 +231,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                 <Box sx={{ display: 'flex', gap: 0.5, pr: 1 }}>
                   <IconButton size="small" onClick={() => {
                     setEditCommentId(comment._id);
-                    setEditContent(comment.content);
                   }}>
                     <Edit fontSize="small" />
                   </IconButton>
@@ -277,34 +262,13 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
           </Box>
 
           {editCommentId === comment._id ? (
-            <>
-              <TextField
-                fullWidth
-                multiline
-                minRows={2}
-                maxRows={10}
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                variant="outlined"
-                placeholder="댓글을 수정하세요"
-              />
-              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                <Button 
-                  onClick={() => setEditCommentId(null)} 
-                  variant="outlined" 
-                  color="primary"
-                >
-                  취소
-                </Button>
-                <Button 
-                  onClick={() => handleUpdateComment(comment._id)} 
-                  variant="outlined" 
-                  color="primary"
-                >
-                  수정
-                </Button>
-              </Box>
-            </>
+            <CommentEdit
+              postId={postId}
+              commentId={comment._id}
+              initialContent={comment.content}
+              onCancel={() => setEditCommentId(null)}
+              refreshComments={refreshComments}
+            />
           ) : (
             <>
               <Typography sx={{ whiteSpace: 'pre-wrap' }}>{comment.content}</Typography>
