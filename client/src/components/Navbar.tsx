@@ -21,9 +21,10 @@ const Navbar = () => {
           H
         </Typography>
 
-        <IconButton onClick={toggleTheme} color="inherit">
+        <IconButton onClick={toggleTheme} className="theme-toggle">
           {darkMode ? <Brightness7 /> : <Brightness4 />}
         </IconButton>
+
 
         {!user ? (
           <>

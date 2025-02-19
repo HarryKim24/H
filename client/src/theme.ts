@@ -97,6 +97,9 @@ export const lightTheme = createTheme({
           "&.dislike": {
             color: "#1e88e5",
           },
+          "&.theme-toggle": {
+            color: "#ffffff",
+          },
         },
       },
     },
@@ -108,6 +111,21 @@ export const lightTheme = createTheme({
           "& .MuiInputBase-root": {
             padding: "10px",
           },
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#424242",
+          color: "#ffffff",
+        },
+      },
+    },
+    MuiToolbar: {
+      styleOverrides: {
+        root: {
+          minHeight: "56px",
         },
       },
     },
@@ -199,6 +217,9 @@ export const darkTheme = createTheme({
           "&.dislike": {
             color: "#64b5f6",
           },
+          "&.theme-toggle": {
+            color: "#ffcc00",
+          },
         },
       },
     },
@@ -210,6 +231,21 @@ export const darkTheme = createTheme({
           "& .MuiInputBase-root": {
             padding: "10px",
           },
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: "#212121",
+          color: "#ffffff",
+        },
+      },
+    },
+    MuiToolbar: {
+      styleOverrides: {
+        root: {
+          minHeight: "56px",
         },
       },
     },
