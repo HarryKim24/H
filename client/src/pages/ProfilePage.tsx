@@ -174,7 +174,7 @@ const ProfilePage = () => {
               <strong>보유 포인트:</strong> {points}
             </Typography>
             <Box sx={{ ml: 1 }}>
-              <img src={getAnimalIcon(points)} alt="User rank icon" width={40} />
+              <img src={getAnimalIcon(points)} alt="User rank icon" width={30} />
             </Box>
           </Box>
           <Typography variant="body1" sx={{ mt: 1, mb: 2 }}>
