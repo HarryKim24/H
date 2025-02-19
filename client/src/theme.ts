@@ -85,6 +85,10 @@ export const lightTheme = createTheme({
           borderRadius: "8px",
           border: "1px solid #bdbdbd", 
           boxShadow: "0px 1px 3px rgba(0,0,0,0.2)",
+          cursor: "pointer",
+          "&:hover": {
+            boxShadow: "0px 4px 6px rgba(0,0,0,0.15)",
+          },
         },
       },
     },
@@ -205,6 +209,10 @@ export const darkTheme = createTheme({
           borderRadius: "8px",
           border: "1px solid #757575",
           boxShadow: "0px 1px 3px rgba(0,0,0,0.2)",
+          cursor: "pointer",
+          "&:hover": {
+            boxShadow: "0px 1px 3px rgba(175, 175, 175, 1)",
+          },
         },
       },
     },
