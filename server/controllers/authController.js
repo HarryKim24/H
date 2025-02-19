@@ -6,21 +6,38 @@ const { jwtSecret, jwtExpiresIn } = require('../config/jwt');
 const signup = async (req, res) => {
   try {
     const { user_id, username, password } = req.body;
+    
     if (!user_id || !username || !password) {
-      return res.status(400).json({ message: "아이디, 닉네임, 비밀번호를 입력해주세요." });
+      return res.status(400).json({ message: "모든 필드를 입력해주세요." });
     }
 
-    const existingUser = await User.findOne({ user_id });
+    const existingUser = await User.findOne({ $or: [{ user_id }, { username }] });
     if (existingUser) {
-      return res.status(400).json({ message: "이미 사용 중인 아이디입니다." });
+      if (existingUser.user_id === user_id) {
+        return res.status(400).json({ message: "이미 사용 중인 아이디입니다." });
+      }
+      if (existingUser.username === username) {
+        return res.status(400).json({ message: "이미 사용 중인 닉네임입니다." });
+      }
     }
 
-    const newUser = new User({ user_id, username, password });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const newUser = new User({ user_id, username, password: hashedPassword });
     await newUser.save();
 
     res.status(201).json({ message: "회원가입 성공" });
   } catch (error) {
-    res.status(500).json({ message: "서버 오류", error });
+    console.error(error);
+
+    if (error.code === 11000) {
+      const duplicatedField = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        message: `이미 사용 중인 ${duplicatedField === 'user_id' ? '아이디' : '닉네임'}입니다.`,
+      });
+    }
+
+    res.status(500).json({ message: "서버 오류 발생" });
   }
 };
 
