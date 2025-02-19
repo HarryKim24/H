@@ -2,14 +2,15 @@ import { useState } from "react";
 import { Box, Button, TextField } from "@mui/material";
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
+import { useCommentStore } from "../store/commentStore";
 
 interface CommentAddProps {
   postId: string;
-  refreshComments: () => void;
 }
 
-const CommentAdd = ({ postId, refreshComments }: CommentAddProps) => {
-  const { token, updatePoints } = useAuthStore();
+const CommentAdd = ({ postId }: CommentAddProps) => {
+  const { token, user } = useAuthStore();
+  const { fetchComments } = useCommentStore();
   const [content, setContent] = useState<string>("");
 
   const handleAddComment = async () => {
@@ -23,8 +24,16 @@ const CommentAdd = ({ postId, refreshComments }: CommentAddProps) => {
       );
 
       setContent("");
-      refreshComments();
-      updatePoints(1);
+      fetchComments(postId);
+
+      if (user?.username) {
+        useCommentStore.setState((state) => ({
+          authorPoints: {
+            ...state.authorPoints,
+            [user.username]: (state.authorPoints[user.username] || 0) + 1,
+          },
+        }));
+      }
     } catch (error) {
       console.error("댓글 작성 실패:", error);
     }

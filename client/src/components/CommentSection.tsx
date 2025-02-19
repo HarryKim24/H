@@ -50,7 +50,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     <Box sx={{ mt: 6, width: "100%", pr: "48px" }}>
       <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>댓글</Typography>
 
-      <CommentAdd postId={postId} refreshComments={() => fetchComments(postId)} />
+      <CommentAdd postId={postId} />
       
       {comments.map((comment) => {
         const points = authorPoints[comment.author.username] ?? 0;
