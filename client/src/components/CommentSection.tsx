@@ -14,6 +14,7 @@ import { Edit, Delete, ThumbUp, ThumbDown } from "@mui/icons-material";
 import { useAuthStore } from "../context/authStore";
 import getAnimalIcon from "../utils/getAnimalIcon";
 import { formatCommentDate } from "../utils/commentDateUtils";
+import CommentAdd from "./CommentAdd";
 
 
 interface Comment {
@@ -41,7 +42,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [authorPoints, setAuthorPoints] = useState<AuthorPoints>({});
   const [loading, setLoading] = useState<boolean>(true);
-  const [content, setContent] = useState<string>("");
   const [editCommentId, setEditCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -87,26 +87,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     } catch (err) {
       console.error("작성자 포인트 불러오기 실패:", err);
     }
-  };
-
-  const handleAddComment = async () => {
-    if (!token || !content.trim()) return;
-  
-    try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`,
-        { content },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-  
-      setContent("");
-      refreshComments();
-      updatePoints(1);
-    } catch (error) {
-      console.error("댓글 작성 실패:", error);
-    }
-  };
-  
+  };  
   
   const handleUpdateComment = async (commentId: string) => {
     if (!token || !editContent.trim()) return;
@@ -239,27 +220,8 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   return (
     <Box sx={{ mt: 6, width: "100%", pr: "48px" }}>
       <Typography variant="h6">댓글</Typography>
-      <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2, mt: 1 }}>
-        <TextField
-          fullWidth
-          multiline
-          minRows={2}
-          maxRows={10}
-          label={!token ? "로그인 후 댓글 작성이 가능합니다" : "댓글을 입력하세요"}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          variant="outlined"
-          disabled={!token}
-        />
-        <Button
-          variant="contained"
-          onClick={handleAddComment}
-          disabled={!token}
-          sx={{ alignSelf: 'flex-start', height: 40 }}
-        >
-          작성
-        </Button>
-      </Box>
+      
+      <CommentAdd postId={postId} refreshComments={refreshComments} />
       
       {comments.map((comment) => (
         <Card key={comment._id}>
