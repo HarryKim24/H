@@ -255,7 +255,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
           variant="contained"
           onClick={handleAddComment}
           disabled={!token}
-          sx={{ alignSelf: 'flex-start', height: 40 }}
+          sx={{ alignSelf: 'flex-start', height: 40, mt: 1 }}
         >
           작성
         </Button>
