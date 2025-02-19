@@ -138,7 +138,6 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
                 commentId={comment._id}
                 initialContent={comment.content}
                 onCancel={() => setEditCommentId(null)}
-                refreshComments={() => fetchComments(postId)}
               />
             ) : (
               <>

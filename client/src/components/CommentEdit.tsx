@@ -2,17 +2,18 @@ import { useState } from "react";
 import { Box, Button, TextField } from "@mui/material";
 import axios from "axios";
 import { useAuthStore } from "../store/authStore";
+import { useCommentStore } from "../store/commentStore";
 
 interface CommentEditProps {
   postId: string;
   commentId: string;
   initialContent: string;
   onCancel: () => void;
-  refreshComments: () => void;
 }
 
-const CommentEdit = ({ postId, commentId, initialContent, onCancel, refreshComments }: CommentEditProps) => {
+const CommentEdit = ({ postId, commentId, initialContent, onCancel }: CommentEditProps) => {
   const { token } = useAuthStore();
+  const { fetchComments } = useCommentStore();
   const [editContent, setEditContent] = useState<string>(initialContent);
 
   const handleUpdateComment = async () => {
@@ -26,7 +27,7 @@ const CommentEdit = ({ postId, commentId, initialContent, onCancel, refreshComme
       );
 
       onCancel();
-      refreshComments();
+      fetchComments(postId);
     } catch (error) {
       console.error("댓글 수정 실패:", error);
     }
