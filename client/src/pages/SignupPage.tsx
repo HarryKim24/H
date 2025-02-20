@@ -55,7 +55,7 @@ const SignupPage = () => {
     try {
       setLoading(true);
   
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/signup`, {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/signup`, {
         user_id: form.userId,
         username: form.username,
         password: form.password,

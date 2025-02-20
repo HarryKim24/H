@@ -20,7 +20,7 @@ const PostEditPage = () => {
     if (!postId || !token) return;
 
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}`);
       setTitle(res.data.title);
       setContent(res.data.content);
       setPreview(res.data.imageUrl || null);
@@ -45,7 +45,7 @@ const PostEditPage = () => {
 
   const handleDeleteImage = async () => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/image`, {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/image`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -75,7 +75,7 @@ const PostEditPage = () => {
         formData.append("deleteImage", "true");
       }
 
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`, formData, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

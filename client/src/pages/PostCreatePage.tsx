@@ -98,7 +98,7 @@ const PostCreatePage = () => {
       formData.append("content", state.content);
       if (state.image) formData.append("image", state.image);
 
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts`, formData, {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/posts`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,

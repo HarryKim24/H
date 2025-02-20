@@ -41,7 +41,7 @@ const PostDetailPage = () => {
       if (!postId) return;
   
       try {
-        const res = await axios.get<Post>(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`);
+        const res = await axios.get<Post>(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}`);
         setPost(res.data);
         fetchAuthorPoints(res.data.author.username);
       } catch (err) {
@@ -57,7 +57,7 @@ const PostDetailPage = () => {
 
   const fetchAuthorPoints = async (username: string) => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/user/get-username`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/get-username`, {
         params: { username }
       });
       setAuthorPoints(res.data.points);
@@ -73,7 +73,7 @@ const PostDetailPage = () => {
     }
   
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/posts/${post._id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${post._id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
   
@@ -97,7 +97,7 @@ const PostDetailPage = () => {
     }
   
     try {
-      const url = `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/like`;
+      const url = `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/like`;
       const { data } = await axios.post(url, { userId: user.id });
   
       setPost((prevPost) => {
@@ -121,7 +121,7 @@ const PostDetailPage = () => {
     }
   
     try {
-      const url = `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/dislike`;
+      const url = `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/dislike`;
       const { data } = await axios.post(url, { userId: user.id });
   
       setPost((prevPost) => {

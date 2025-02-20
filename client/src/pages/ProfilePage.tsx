@@ -77,7 +77,7 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 
 const fetchProfile = async (token: string, dispatch: Dispatch<ActionType>) => {
   try {
-    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/user/profile`, {
+    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -150,7 +150,7 @@ const ProfilePage = () => {
     }
   
     try {
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/user/profile`, updateData, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, updateData, {
         headers: { Authorization: `Bearer ${token}` },
       });
   
@@ -178,7 +178,7 @@ const ProfilePage = () => {
     dispatch({ type: "SET_ERROR", value: "" });
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/user/profile`, {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, {
         headers: { Authorization: `Bearer ${token}` },
         data: { password: state.password },
       });

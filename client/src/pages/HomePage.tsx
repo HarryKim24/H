@@ -54,7 +54,7 @@ const HomePage = () => {
       if (filter === "my-posts" && user) params.author = user.id;
 
       const res = await axios.get<{ posts: Post[]; totalPosts: number }>(
-        `${import.meta.env.VITE_API_BASE_URL}/posts`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/posts`,
         { params, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
 
@@ -74,7 +74,7 @@ const HomePage = () => {
     try {
       const responses = await Promise.all(
         usernames.map((username) =>
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/user/get-username`, { params: { username } })
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/get-username`, { params: { username } })
         )
       );
 
