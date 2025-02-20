@@ -1,25 +1,69 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import axios from "axios";
-import { Container, TextField, Button, Typography, Alert, Box, IconButton } from "@mui/material";
+import { Container, TextField, Button, Typography, Alert, Box, IconButton, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../context/authStore";
 import { Delete } from "@mui/icons-material";
 
+interface State {
+  title: string;
+  content: string;
+  image: File | null;
+  preview: string | null;
+  loading: boolean;
+  error: string;
+  titleError: boolean;
+  contentError: boolean;
+}
+
+const initialState: State = {
+  title: "",
+  content: "",
+  image: null,
+  preview: null,
+  loading: false,
+  error: "",
+  titleError: false,
+  contentError: false,
+};
+
+type ValueOf<T> = T[keyof T];
+
+type Action =
+  | { type: "SET_FIELD"; field: keyof State; value: ValueOf<State> }
+  | { type: "RESET" }
+  | { type: "SET_ERROR"; message: string }
+  | { type: "SET_LOADING"; value: boolean };
+
+  const reducer = (state: State, action: Action): State => {
+    switch (action.type) {
+      case "SET_FIELD":
+        return { ...state, [action.field]: action.value };
+      case "RESET":
+        return initialState;
+      case "SET_ERROR":
+        return { ...state, error: action.message };
+      case "SET_LOADING":
+        return { ...state, loading: action.value };
+      default:
+        return state;
+    }
+  };
+
+const validatePost = (title: string, content: string) => {
+  if (!title.trim()) return "제목을 입력해주세요.";
+  if (!content.trim()) return "내용을 입력해주세요.";
+  return "";
+};
+
 const PostCreatePage = () => {
   const navigate = useNavigate();
   const { token, user, updatePoints } = useAuthStore();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [titleError, setTitleError] = useState(false);
-  const [contentError, setContentError] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     if (!token) {
-      setError("로그인 후 이용해 주세요.");
+      dispatch({ type: "SET_ERROR", message: "로그인 후 이용해 주세요." });
       setTimeout(() => navigate("/login"), 2000);
     }
   }, [token, navigate]);
@@ -27,39 +71,32 @@ const PostCreatePage = () => {
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setImage(file);
-      setPreview(URL.createObjectURL(file));
+      dispatch({ type: "SET_FIELD", field: "image", value: file });
+      dispatch({ type: "SET_FIELD", field: "preview", value: URL.createObjectURL(file) });
     }
   };
 
   const handleDeleteImage = () => {
-    setImage(null);
-    setPreview(null);
+    dispatch({ type: "SET_FIELD", field: "image", value: null });
+    dispatch({ type: "SET_FIELD", field: "preview", value: null });
   };
 
   const handleSubmit = async () => {
-    if (!token) {
-      console.error("로그인 후 다시 시도하세요.");
-      return;
-    }
+    if (!token) return console.error("로그인 후 다시 시도하세요.");
 
-    if (!title.trim()) {
-      setTitleError(true);
-      return;
-    }
-    if (!content.trim()) {
-      setContentError(true);
+    const validationError = validatePost(state.title, state.content);
+    if (validationError) {
+      dispatch({ type: "SET_ERROR", message: validationError });
       return;
     }
 
     try {
-      setLoading(true);
+      dispatch({ type: "SET_LOADING", value: true });
+
       const formData = new FormData();
-      formData.append("title", title);
-      formData.append("content", content);
-      if (image) {
-        formData.append("image", image);
-      }
+      formData.append("title", state.title);
+      formData.append("content", state.content);
+      if (state.image) formData.append("image", state.image);
 
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/posts`, formData, {
         headers: {
@@ -68,16 +105,12 @@ const PostCreatePage = () => {
         },
       });
 
-      if (user) {
-        updatePoints(3);
-        console.log(`새로운 포인트: ${user.points + 3}`);
-      }
-
+      if (user) updatePoints(3);
       navigate("/");
     } catch (err) {
       console.error("게시글 작성 실패:", err);
     } finally {
-      setLoading(false);
+      dispatch({ type: "SET_LOADING", value: false });
     }
   };
 
@@ -85,68 +118,45 @@ const PostCreatePage = () => {
     <Container sx={{ pt: 2, pb: 4, width: "800px" }}>
       <Typography variant="h5" sx={{ fontWeight: "bold" }}>새 게시글 작성</Typography>
 
-      {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
-      )}
+      {state.error && <Alert severity="error" sx={{ mt: 2 }}>{state.error}</Alert>}
 
       <TextField
         label="제목"
         fullWidth
         margin="normal"
-        value={title}
-        onChange={(e) => {
-          setTitle(e.target.value);
-          if (titleError) setTitleError(false);
-        }}
-        error={titleError}
-        helperText={titleError ? "제목을 입력해 주세요." : ""}
+        value={state.title}
+        onChange={(e) => dispatch({ type: "SET_FIELD", field: "title", value: e.target.value })}
+        error={state.titleError}
+        helperText={state.titleError ? "제목을 입력해 주세요." : ""}
       />
-      
+
       <TextField
         label="내용"
         fullWidth
         margin="normal"
         multiline
         rows={4}
-        value={content}
-        onChange={(e) => {
-          setContent(e.target.value);
-          if (contentError) setContentError(false);
-        }}
-        error={contentError}
-        helperText={contentError ? "내용을 입력해 주세요." : ""}
+        value={state.content}
+        onChange={(e) => dispatch({ type: "SET_FIELD", field: "content", value: e.target.value })}
+        error={state.contentError}
+        helperText={state.contentError ? "내용을 입력해 주세요." : ""}
       />
 
-      {preview && (
+      {state.preview && (
         <Box sx={{ position: "relative", textAlign: "center", mt: 2 }}>
-          <img
-            src={preview}
-            alt="미리보기"
-            style={{
-              maxWidth: "100%",
-              maxHeight: "500px",
-              objectFit: "contain",
-            }}
-          />
+          <img src={state.preview} alt="미리보기" style={{ maxWidth: "100%", maxHeight: "500px", objectFit: "contain" }} />
         </Box>
       )}
 
-      <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 2 }}>
         <input type="file" accept="image/*" onChange={handleImageChange} />
-
-        {preview && (
-          <IconButton sx={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={handleDeleteImage}>
-            <Delete sx={{ color: "white" }} />
-          </IconButton>
-        )}
+        {state.preview && <IconButton onClick={handleDeleteImage}><Delete /></IconButton>}
       </Box>
 
       <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end", gap: 2 }}>
-        <Button variant="contained" onClick={() => navigate("/")} >취소</Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={loading}>
-          {loading ? "작성 중..." : "작성하기"}
+        <Button variant="contained" onClick={() => navigate("/")}>취소</Button>
+        <Button variant="contained" onClick={handleSubmit} disabled={state.loading}>
+          {state.loading ? <CircularProgress size={24} /> : "작성하기"}
         </Button>
       </Box>
     </Container>
