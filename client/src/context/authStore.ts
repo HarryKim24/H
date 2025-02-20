@@ -15,7 +15,9 @@ interface AuthState {
   login: (user_id: string, password: string) => Promise<boolean>;
   logout: () => void;
   updatePoints: (amount: number) => void;
+  setUser: (user: User) => void;
 }
+
 
 export const useAuthStore = create<AuthState>((set) => ({
   token: localStorage.getItem("token"),
@@ -57,5 +59,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem("user", JSON.stringify(updatedUser));
       return { user: updatedUser };
     });
-  }  
+  },
+
+  setUser: (user) => {
+    set({ user });
+    localStorage.setItem("user", JSON.stringify(user));
+  },
 }));
