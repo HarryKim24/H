@@ -81,6 +81,7 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           marginBottom: "8px",
+          padding: "8px",
           borderRadius: "8px",
           border: "1px solid #bdbdbd", 
           boxShadow: "0px 1px 3px rgba(0,0,0,0.2)",

@@ -40,37 +40,35 @@ const HomePage = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [filter, setFilter] = useState<string>("all");
+
   const { token, user } = useAuthStore();
   const limit = 10;
   const theme = useTheme();
 
-  const fetchPosts = useCallback(async (selectedFilter: string, page: number) => {
+  const fetchPosts = useCallback(async () => {
     try {
-      if (selectedFilter === "my-posts" && !user) return;
-  
+      if (filter === "my-posts" && !user) return;
+
       setLoading(true);
-      const params: PostQueryParams = { page, limit, filter: selectedFilter };
-  
-      if (selectedFilter === "my-posts" && user) {
-        params.author = user.id;
-      }
-  
+      const params: PostQueryParams = { page: currentPage, limit, filter };
+      if (filter === "my-posts" && user) params.author = user.id;
+
       const res = await axios.get<{ posts: Post[]; totalPosts: number }>(
         `${import.meta.env.VITE_API_BASE_URL}/posts`,
         { params, headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
-  
+
       setPosts(res.data.posts);
       setTotalPages(Math.ceil(res.data.totalPosts / limit));
 
-      const usernames = [...new Set(res.data.posts.map((post) => post.author.username))];
-      fetchAuthorPoints(usernames);
+      const uniqueUsernames = Array.from(new Set(res.data.posts.map((post) => post.author.username)));
+      fetchAuthorPoints(uniqueUsernames);
     } catch (err) {
       console.error("게시글 불러오기 실패:", err);
     } finally {
       setLoading(false);
     }
-  }, [user, token]);
+  }, [filter, currentPage, token, user]);
 
   const fetchAuthorPoints = async (usernames: string[]) => {
     try {
@@ -80,27 +78,20 @@ const HomePage = () => {
         )
       );
 
-      const newAuthorPoints: AuthorPoints = {};
-      responses.forEach((res) => {
-        newAuthorPoints[res.data.username] = res.data.points;
-      });
+      const newAuthorPoints: AuthorPoints = responses.reduce((acc, res) => {
+        acc[res.data.username] = res.data.points;
+        return acc;
+      }, {} as AuthorPoints);
 
       setAuthorPoints((prev) => ({ ...prev, ...newAuthorPoints }));
     } catch (err) {
       console.error("작성자 포인트 불러오기 실패:", err);
     }
   };
-  
-  useEffect(() => {
-    if (user) {
-      fetchPosts(filter, currentPage);
-    }
-  }, [filter, currentPage, user, fetchPosts]);
-  
 
   useEffect(() => {
-    fetchPosts(filter, currentPage);
-  }, [filter, currentPage, fetchPosts]);
+    fetchPosts();
+  }, [fetchPosts]);
 
   const handleFilterChange = (newFilter: string) => {
     setFilter(newFilter);
@@ -110,10 +101,10 @@ const HomePage = () => {
   const handleCreatePost = () => {
     if (!token || !user) {
       alert("로그인 후 이용 가능합니다.");
-      navigate('/login');
+      navigate("/login");
       return;
     }
-    navigate('/create');
+    navigate("/create");
   };
 
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 5 }} />;
@@ -122,61 +113,27 @@ const HomePage = () => {
     <Container sx={{ pt: 2, pb: 4, width: "800px" }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button 
-            variant={filter === "all" ? "outlined" : "contained"} 
-            sx={{
-              fontWeight: "bold",
-              backgroundColor: filter === "all" ? theme.palette.secondary.main : theme.palette.background.default,
-              border: `1px solid ${theme.palette.secondary.main}`,
-              color: filter === "all" ? theme.palette.background.default : theme.palette.secondary.main,
-              "&:hover" : {
-                backgroundColor: theme.palette.secondary.dark,
-                borderColor: theme.palette.secondary.dark,
-                color: theme.palette.background.default
-              }
-            }}
+          <Button
+            variant={filter === "all" ? "outlined" : "contained"}
             onClick={() => handleFilterChange("all")}
           >
             전체 글
           </Button>
-          <Button 
-            variant={filter === "popular" ? "outlined" : "contained"} 
-            sx={{
-              fontWeight: "bold",
-              backgroundColor: filter === "popular" ? theme.palette.secondary.main : theme.palette.background.default,
-              border: `1px solid ${theme.palette.secondary.main}`,
-              color: filter === "popular" ? theme.palette.background.default : theme.palette.secondary.main,
-              "&:hover" : {
-                backgroundColor: theme.palette.secondary.dark,
-                borderColor: theme.palette.secondary.dark,
-                color: theme.palette.background.default
-              }
-            }}
+          <Button
+            variant={filter === "popular" ? "outlined" : "contained"}
             onClick={() => handleFilterChange("popular")}
           >
             인기 글
           </Button>
           {token && user && (
-            <Button 
-              variant={filter === "my-posts" ? "outlined" : "contained"} 
-              sx={{
-                fontWeight: "bold",
-                backgroundColor: filter === "my-posts" ? theme.palette.secondary.main : theme.palette.background.default,
-                border: `1px solid ${theme.palette.secondary.main}`,
-                color: filter === "my-posts" ? theme.palette.background.default : theme.palette.secondary.main,
-                "&:hover" : {
-                  backgroundColor: theme.palette.secondary.dark,
-                  borderColor: theme.palette.secondary.dark,
-                  color: theme.palette.background.default
-                }
-              }}
+            <Button
+              variant={filter === "my-posts" ? "outlined" : "contained"}
               onClick={() => handleFilterChange("my-posts")}
             >
               내 글
             </Button>
           )}
         </Box>
-
         <Button variant="contained" onClick={handleCreatePost}>
           게시글 작성
         </Button>
@@ -188,11 +145,8 @@ const HomePage = () => {
         </Typography>
       ) : (
         posts.map((post) => (
-          <Card 
-            key={post._id} 
-            onClick={() => navigate(`/posts/${post._id}`)}
-          >
-            <CardContent sx={{ p: 1, pl: 1.5, pr: 1.5, paddingBottom: "8px !important" }}>
+          <Card key={post._id} onClick={() => navigate(`/posts/${post._id}`)}>
+            <CardContent sx={{ p: 0, pl: 1.5, pr: 1.5, paddingBottom: "0px !important" }}>
               <Typography variant="h6" sx={{ fontWeight: "bold", wordBreak: "break-word" }}>
                 {post.title.length > 50 ? post.title.substring(0, 50) + "..." : post.title}
               </Typography>
@@ -205,24 +159,20 @@ const HomePage = () => {
 
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <Box sx={{ lineHeight: 1 }}>
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary" 
-                    sx={{ display: "flex", alignItems: "center", marginBottom: 0, paddingBottom: 0 }}
-                  >
-                    작성자: 
+                  <Typography variant="body2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
+                    작성자:
                     {authorPoints[post.author.username] !== undefined && (
-                      <img 
-                        src={getAnimalIcon(authorPoints[post.author.username])} 
-                        alt="User rank icon" 
-                        width={20} 
-                        height={20} 
+                      <img
+                        src={getAnimalIcon(authorPoints[post.author.username])}
+                        alt="User rank icon"
+                        width={20}
+                        height={20}
                         style={{ verticalAlign: "middle", margin: "0 4px" }}
                       />
                     )}
                     {post.author?.username || "알 수 없음"}
                   </Typography>
-                  <Typography variant="caption" color="text.disabled" sx={{ marginTop: 0, paddingTop: 0, display: "block" }}>
+                  <Typography variant="caption" color="text.disabled">
                     {formatPostDate(post.createdAt)}
                   </Typography>
                 </Box>
@@ -239,12 +189,7 @@ const HomePage = () => {
       )}
 
       <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-        <Pagination 
-          count={totalPages} 
-          page={currentPage} 
-          onChange={(_, page) => setCurrentPage(page)}
-          color="primary"
-        />
+        <Pagination count={totalPages} page={currentPage} onChange={(_, page) => setCurrentPage(page)} color="primary" />
       </Box>
     </Container>
   );
