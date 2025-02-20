@@ -52,7 +52,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     try {
       setLoading(true);
       const res = await axios.get<{ comments: Comment[]; totalComments: number }>(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments?page=${currentPage}&limit=${commentsPerPage}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments?page=${currentPage}&limit=${commentsPerPage}`
       );
       setComments(res.data.comments);
       setTotalPages(Math.ceil(res.data.totalComments / commentsPerPage));
@@ -74,7 +74,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     try {
       const responses = await Promise.all(
         usernames.map((username) =>
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/user/get-username`, { params: { username } })
+          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/get-username`, { params: { username } })
         )
       );
 
@@ -94,7 +94,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments`,
         { content },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -111,7 +111,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const handleUpdateComment = async (commentId: string) => {
     if (!token || !editContent.trim()) return;
     await axios.put(
-      `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
+      `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}`,
       { content: editContent },
       { headers: { Authorization: `Bearer ${token}` } }
     );
@@ -125,7 +125,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
   
@@ -143,7 +143,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     }
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, 
+        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}/like`, 
         {}, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -170,7 +170,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     }
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/like`, 
+        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}/like`, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setComments((prevComments) =>
@@ -192,7 +192,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     }
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, 
+        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}/dislike`, 
         {}, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -219,7 +219,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     }
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/posts/${postId}/comments/${commentId}/dislike`, 
+        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}/dislike`, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setComments((prevComments) =>
