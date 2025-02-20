@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Container, TextField, Button, Typography, Alert, Box, IconButton } from "@mui/material";
@@ -16,27 +16,23 @@ const PostEditPage = () => {
   const [error, setError] = useState("");
   const [isImageDeleted, setIsImageDeleted] = useState(false);
 
-  useEffect(() => {
-    if (!token) {
-      setError("로그인 후 이용해 주세요.");
-      setTimeout(() => navigate("/login"), 2000);
-      return;
+  const fetchPost = useCallback(async () => {
+    if (!postId || !token) return;
+
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`);
+      setTitle(res.data.title);
+      setContent(res.data.content);
+      setPreview(res.data.imageUrl || null);
+    } catch (err) {
+      console.error("게시글 불러오기 실패:", err);
+      setError("게시글을 불러오는 데 실패했습니다.");
     }
+  }, [postId, token]);
 
-    const fetchPost = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/posts/${postId}`);
-        setTitle(res.data.title);
-        setContent(res.data.content);
-        setPreview(res.data.imageUrl || null);
-      } catch (err) {
-        console.error("게시글 불러오기 실패:", err);
-        setError("게시글을 불러오는 데 실패했습니다.");
-      }
-    };
-
+  useEffect(() => {
     fetchPost();
-  }, [postId, token, navigate]);
+  }, [fetchPost]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -63,6 +59,11 @@ const PostEditPage = () => {
   };
 
   const handleUpdate = async () => {
+    if (!title.trim() || !content.trim()) {
+      setError("제목과 내용을 입력해 주세요.");
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("title", title);
