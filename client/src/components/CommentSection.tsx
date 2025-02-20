@@ -11,7 +11,7 @@ import {
   Pagination,
 } from "@mui/material";
 import { Edit, Delete, ThumbUp, ThumbDown } from "@mui/icons-material";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 import getAnimalIcon from "../utils/getAnimalIcon";
 import { formatCommentDate } from "../utils/commentDateUtils";
 
