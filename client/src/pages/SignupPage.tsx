@@ -45,21 +45,22 @@ const SignupPage = () => {
   const handleSignup = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-
+  
     const validationError = validateSignupForm(form);
     if (validationError) {
       setError(validationError);
       return;
     }
-
+  
     try {
       setLoading(true);
+  
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/signup`, {
         user_id: form.userId,
         username: form.username,
         password: form.password,
       });
-
+  
       alert("회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.");
       navigate("/login");
     } catch (err: any) {
@@ -76,65 +77,16 @@ const SignupPage = () => {
         {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
 
         <form onSubmit={handleSignup}>
-          <TextField
-            name="userId"
-            label="아이디"
-            fullWidth margin="normal"
-            value={form.userId}
-            onChange={handleChange}
-            helperText="아이디는 최소 8자 이상, 영문과 숫자를 포함해야 합니다."
-          />
-          <TextField
-            name="username"
-            label="닉네임"
-            fullWidth margin="normal"
-            value={form.username}
-            onChange={handleChange}
-            autoComplete="username"
-            helperText="닉네임은 최소 2자 이상이며, 영문, 한글, 숫자만 가능합니다."
-          />
+          <TextField name="userId" label="아이디" fullWidth margin="normal" value={form.userId} onChange={handleChange} helperText="아이디는 최소 8자 이상, 영문과 숫자를 포함해야 합니다." />
+          <TextField name="username" label="닉네임" fullWidth margin="normal" value={form.username} onChange={handleChange} autoComplete="username" helperText="닉네임은 최소 2자 이상이며, 영문, 한글, 숫자만 가능합니다." />
 
-          <TextField
-            name="password"
-            label="비밀번호"
-            type={showPassword ? "text" : "password"}
-            fullWidth margin="normal"
-            value={form.password}
-            onChange={handleChange}
-            autoComplete="new-password"
+          <TextField name="password" label="비밀번호" type={showPassword ? "text" : "password"} fullWidth margin="normal" value={form.password} onChange={handleChange} autoComplete="new-password"
             helperText="비밀번호는 최소 8자 이상, 영문과 숫자를 포함해야 합니다."
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
-            }}
+            slotProps={{ input: { endAdornment: (<InputAdornment position="end"><IconButton onClick={() => setShowPassword(!showPassword)} edge="end">{showPassword ? <Visibility /> : <VisibilityOff />}</IconButton></InputAdornment>) } }}
           />
 
-          <TextField
-            name="confirmPassword"
-            label="비밀번호 확인"
-            type={showConfirmPassword ? "text" : "password"}
-            fullWidth margin="normal"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            autoComplete="new-password"
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                      {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
-            }}
+          <TextField name="confirmPassword" label="비밀번호 확인" type={showConfirmPassword ? "text" : "password"} fullWidth margin="normal" value={form.confirmPassword} onChange={handleChange} autoComplete="new-password"
+            slotProps={{ input: { endAdornment: (<InputAdornment position="end"><IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">{showConfirmPassword ? <Visibility /> : <VisibilityOff />}</IconButton></InputAdornment>) } }}
           />
 
           <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading} sx={{ mt: 2 }}>
@@ -142,10 +94,7 @@ const SignupPage = () => {
           </Button>
         </form>
 
-        <Typography onClick={() => navigate("/login")} sx={{
-          mt: 2, cursor: "pointer", textDecoration: "none",
-          color: "primary.main", "&:hover": { textDecoration: "underline" }
-        }}>
+        <Typography onClick={() => navigate("/login")} sx={{ mt: 2, cursor: "pointer", textDecoration: "none", color: "primary.main", "&:hover": { textDecoration: "underline" } }}>
           로그인 페이지로 이동
         </Typography>
       </Box>
