@@ -130,7 +130,6 @@ const ProfilePage = () => {
     fetchProfile(token, dispatch);
   }, [token, navigate]);
 
-
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
     dispatch({ type: "SET_LOADING", value: true });
@@ -154,6 +153,12 @@ const ProfilePage = () => {
       await axios.put(`${import.meta.env.VITE_API_BASE_URL}/user/profile`, updateData, {
         headers: { Authorization: `Bearer ${token}` },
       });
+  
+      const { user, setUser } = useAuthStore.getState();
+      if (user) {
+        const updatedUser = { ...user, username: state.username };
+        setUser(updatedUser);
+      }
   
       dispatch({ type: "SET_MESSAGE", value: "프로필이 업데이트되었습니다." });
       dispatch({ type: "RESET_PASSWORD_FIELDS" });
