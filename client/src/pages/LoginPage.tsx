@@ -14,9 +14,11 @@ const LoginPage = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     const success = await login(user_id, password);
     if (success) {
+      alert("환영합니다!");
       navigate("/");
     } else {
       setError("아이디 또는 비밀번호를 확인하세요.");
@@ -27,14 +29,13 @@ const LoginPage = () => {
     <Container maxWidth="xs">
       <Box sx={{ mt: 10, textAlign: "center" }}>
         <Typography variant="h5">로그인</Typography>
-        {error && <Typography color="error">{error}</Typography>}
+        {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
 
         <form onSubmit={handleLogin}>
           <TextField
             label="아이디"
             fullWidth
             margin="normal"
-            className="auth-textfield"
             value={user_id}
             onChange={(e) => setUserId(e.target.value)}
             autoComplete="username"
@@ -45,21 +46,22 @@ const LoginPage = () => {
             type={showPassword ? "text" : "password"}
             fullWidth
             margin="normal"
-            className="auth-textfield"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                    {showPassword ? <Visibility /> : <VisibilityOff />}
-                  </IconButton>
-                </InputAdornment>
-              )
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
             }}
           />
-          
+
           <Button 
             type="submit" 
             variant="contained" 
