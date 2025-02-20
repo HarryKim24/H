@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FormEvent, useEffect, useReducer, useCallback, Dispatch  } from "react";
 import axios from "axios";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 import { 
   Container, TextField, Typography, Button, Box, 
   CircularProgress, Alert, Dialog, DialogActions, 

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Container, TextField, Button, Typography, Alert, Box, IconButton } from "@mui/material";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 import { Delete } from "@mui/icons-material";
 
 const PostEditPage = () => {

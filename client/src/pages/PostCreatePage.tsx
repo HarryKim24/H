@@ -2,7 +2,7 @@ import { useEffect, useReducer } from "react";
 import axios from "axios";
 import { Container, TextField, Button, Typography, Alert, Box, IconButton, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../context/authStore";
+import { useAuthStore } from "../store/authStore";
 import { Delete } from "@mui/icons-material";
 
 interface State {
