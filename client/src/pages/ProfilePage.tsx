@@ -313,12 +313,28 @@ const ProfilePage = () => {
               />
   
               <DialogActions>
-                <Button onClick={() => dispatch({ type: "TOGGLE_DIALOG" })} color="primary">
-                  취소
-                </Button>
-                <Button type="submit" sx={{ color: theme.palette.error.main }} disabled={!state.password}>
-                  탈퇴
-                </Button>
+              <Button 
+                onClick={() => dispatch({ type: "TOGGLE_DIALOG" })} 
+                color="primary"
+                sx={{
+                  color: theme.palette.primary.main,
+                  backgroundColor: theme.palette.background.paper,
+                  border: `1px solid ${theme.palette.primary.main}`,
+                }}
+              >
+                취소
+              </Button>
+              <Button 
+                type="submit" 
+                sx={{ 
+                  color: theme.palette.error.main,
+                  backgroundColor: theme.palette.background.paper,
+                  border: `1px solid ${theme.palette.error.main}`,
+                }} 
+                disabled={!state.password}
+              >
+                탈퇴
+              </Button>
               </DialogActions>
             </form>
           </DialogContent>
