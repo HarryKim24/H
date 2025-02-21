@@ -237,7 +237,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 3 }} />;
 
   return (
-    <Box sx={{ mt: 6, width: "100%", pr: "48px" }}>
+    <Box sx={{ mt: 6, width: "100%" }}>
       <Typography variant="h6">댓글</Typography>
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, mb: 2, mt: 1 }}>
         <TextField
