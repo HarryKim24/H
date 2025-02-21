@@ -3,13 +3,21 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+const allowedOrigins = [
+    "https://h-two-iota.vercel.app",
+    "http://localhost:3000"
+];
+
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI)
