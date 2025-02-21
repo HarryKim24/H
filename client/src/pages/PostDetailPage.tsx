@@ -141,7 +141,14 @@ const PostDetailPage = () => {
   if (!post) return <Typography sx={{ textAlign: "center", mt: 5 }}>게시글을 찾을 수 없습니다.</Typography>;
 
   return (
-    <Container sx={{ pt: 2, pb: 4, width: "800px" }}>
+    <Container
+      sx={{
+        pt: 2,
+        pb: 4,
+        width: "100%",
+        maxWidth: { xs: "95%", sm: "90%", md: "800px" },
+      }}
+    >
       <Typography 
         variant="h4" 
         sx={{ fontWeight: "bold", mb: 2, wordBreak: "break-word" }}

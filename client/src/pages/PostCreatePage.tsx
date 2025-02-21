@@ -115,7 +115,14 @@ const PostCreatePage = () => {
   };
 
   return (
-    <Container sx={{ pt: 2, pb: 4, width: "800px" }}>
+    <Container
+      sx={{
+        pt: 2,
+        pb: 4,
+        width: "100%",
+        maxWidth: { xs: "95%", sm: "90%", md: "800px" },
+      }}
+    >
       <Typography variant="h5" sx={{ fontWeight: "bold" }}>새 게시글 작성</Typography>
 
       {state.error && <Alert severity="error" sx={{ mt: 2 }}>{state.error}</Alert>}
