@@ -5,7 +5,7 @@ const cors = require('cors');
 
 const allowedOrigins = [
     "https://h-two-iota.vercel.app",
-    "http://localhost:3000"
+    "http://localhost:5173"
 ];
 
 const authRoutes = require('./routes/authRoutes');

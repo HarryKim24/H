@@ -90,7 +90,14 @@ const PostEditPage = () => {
   };
 
   return (
-    <Container sx={{ pt: 2, pb: 4, width: "800px" }}>
+    <Container
+      sx={{
+        pt: 2,
+        pb: 4,
+        width: "100%",
+        maxWidth: { xs: "95%", sm: "90%", md: "800px" },
+      }}
+    >
       <Typography variant="h5">게시글 수정</Typography>
 
       {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}

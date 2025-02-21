@@ -110,8 +110,15 @@ const HomePage = () => {
   if (loading) return <CircularProgress sx={{ display: "block", margin: "auto", mt: 5 }} />;
 
   return (
-    <Container sx={{ pt: 2, pb: 4, width: "800px" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+    <Container
+      sx={{
+        pt: 2,
+        pb: 4,
+        width: "100%",
+        maxWidth: { xs: "95%", sm: "90%", md: "800px" },
+      }}
+    >
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2 }}>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button
             variant={filter === "all" ? "outlined" : "contained"}
@@ -134,7 +141,8 @@ const HomePage = () => {
             </Button>
           )}
         </Box>
-        <Button variant="contained" onClick={handleCreatePost}>
+        <Button 
+          variant="contained" onClick={handleCreatePost}>
           게시글 작성
         </Button>
       </Box>
