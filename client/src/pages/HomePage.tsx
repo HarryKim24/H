@@ -115,11 +115,11 @@ const HomePage = () => {
         pt: 2,
         pb: 4,
         width: "100%",
-        maxWidth: { xs: "95%", sm: "90%", md: "800px" },
+        maxWidth: { xs: "100%", sm: "90%", md: "800px" },
       }}
     >
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, gap: 2 }}>
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <Button
             variant={filter === "all" ? "outlined" : "contained"}
             onClick={() => handleFilterChange("all")}
@@ -154,7 +154,7 @@ const HomePage = () => {
       ) : (
         posts.map((post) => (
           <Card key={post._id} onClick={() => navigate(`/posts/${post._id}`)}>
-            <CardContent sx={{ p: 0, pl: 1.5, pr: 1.5, paddingBottom: "0px !important" }}>
+            <CardContent sx={{ p: 0, pl: 1, pr: 1, paddingBottom: "0px !important" }}>
               <Typography variant="h6" sx={{ fontWeight: "bold", wordBreak: "break-word" }}>
                 {post.title.length > 50 ? post.title.substring(0, 50) + "..." : post.title}
               </Typography>
