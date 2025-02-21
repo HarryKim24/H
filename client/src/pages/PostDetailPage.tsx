@@ -268,10 +268,10 @@ const PostDetailPage = () => {
         </DialogActions>
       </Dialog>
 
-      <Box sx={{ width: "800px", margin: "auto", mt: 4 }}>
+      <Box sx={{ width: "100%", maxWidth: { xs: "100%", sm: "90%", md: "800px" }, margin: "auto", mt: 4 }}>
+        <CommentSection postId={postId!} />
+      </Box>
 
-      <CommentSection postId={postId!} />
-    </Box>
     </Container>
   );
 };
