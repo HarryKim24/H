@@ -64,5 +64,5 @@ erDiagram
   - Render (Node 서버 배포)
   - 배포 URL: [https://h-6yo4.onrender.com](https://h-6yo4.onrender.com)
   - **참고**: Render 무료 요금제의 경우 일정 시간 동안 사용자가 접속하지 않으면 서버가 슬립 모드에 들어갑니다.  
-    이를 방지하기 위해 **GitHub Actions**를 이용해 5분마다 서버에 요청을 보내도록 설정하였습니다.  
+    이를 방지하기 위해 **GitHub Actions**를 이용해 일정 주기마다 서버에 요청을 보내도록 설정하였습니다.  
     (`.github/workflows/ping.yml`)
