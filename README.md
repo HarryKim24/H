@@ -51,11 +51,6 @@ erDiagram
     USERS }o--o{ COMMENTS : "싫어요"
 
 ```
-## 7. 배포
-
-- **프론트엔드**
-  - Vercel (자동 배포 및 CDN 제공)
-  - 배포 URL: [https://h-two-iota.vercel.app](https://h-two-iota.vercel.app)
 
 ## 7. 배포
 
