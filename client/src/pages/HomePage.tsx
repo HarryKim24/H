@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { Container, Card, CardContent, Typography, CircularProgress, Button, Box, Divider, Pagination } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { ThumbUp, ThumbDown } from "@mui/icons-material";
@@ -41,40 +41,43 @@ const HomePage = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [filter, setFilter] = useState<string>("all");
 
-  const { token, user } = useAuthStore();
+  const { user } = useAuthStore();
   const limit = 10;
   const theme = useTheme();
 
   const fetchPosts = useCallback(async () => {
     try {
       if (filter === "my-posts" && !user) return;
-
+  
       setLoading(true);
       const params: PostQueryParams = { page: currentPage, limit, filter };
       if (filter === "my-posts" && user) params.author = user.id;
-
-      const res = await axios.get<{ posts: Post[]; totalPosts: number }>(
-        `${import.meta.env.VITE_API_BASE_URL}/api/posts`,
-        { params, headers: token ? { Authorization: `Bearer ${token}` } : {} }
+  
+      const res = await api.get<{ posts: Post[]; totalPosts: number }>(
+        "/api/posts",
+        { params }
       );
-
+  
       setPosts(res.data.posts);
       setTotalPages(Math.ceil(res.data.totalPosts / limit));
-
-      const uniqueUsernames = Array.from(new Set(res.data.posts.map((post) => post.author.username)));
+  
+      const uniqueUsernames = Array.from(
+        new Set(res.data.posts.map((post) => post.author.username))
+      );
       fetchAuthorPoints(uniqueUsernames);
     } catch (err) {
       console.error("게시글 불러오기 실패:", err);
     } finally {
       setLoading(false);
     }
-  }, [filter, currentPage, token, user]);
+  }, [filter, currentPage, user]);
+
 
   const fetchAuthorPoints = async (usernames: string[]) => {
     try {
       const responses = await Promise.all(
         usernames.map((username) =>
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/get-username`, { params: { username } })
+          api.get("/api/user/get-username", { params: { username } })
         )
       );
 
@@ -99,7 +102,7 @@ const HomePage = () => {
   };
 
   const handleCreatePost = () => {
-    if (!token || !user) {
+    if (!user) {
       alert("로그인 후 이용 가능합니다.");
       navigate("/login");
       return;
@@ -132,7 +135,7 @@ const HomePage = () => {
           >
             인기 글
           </Button>
-          {token && user && (
+          {user && (
             <Button
               variant={filter === "my-posts" ? "outlined" : "contained"}
               onClick={() => handleFilterChange("my-posts")}

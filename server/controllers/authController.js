@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { jwtSecret, jwtExpiresIn } = require('../config/jwt');
+const { jwtSecret, jwtExpiresIn  } = require('../config/jwt');
 
 const signup = async (req, res) => {
   try {
@@ -49,16 +49,41 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "비밀번호가 일치하지 않습니다." });
     }
 
-    const token = jwt.sign({ id: user._id, user_id: user.user_id }, jwtSecret, { expiresIn: jwtExpiresIn });
+    const token = jwt.sign(
+      { id: user._id, user_id: user.user_id },
+      jwtSecret,
+      { expiresIn: jwtExpiresIn }
+    );
+
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 60 * 60 * 1000
+    });
 
     res.status(200).json({
       message: "로그인 성공",
-      token,
-      user: { id: user._id, user_id: user.user_id, username: user.username },
+      user: {
+        id: user._id,
+        user_id: user.user_id,
+        username: user.username
+      }
     });
   } catch (error) {
     res.status(500).json({ message: "서버 오류 발생" });
   }
 };
 
-module.exports = { signup, login };
+const logout = (req, res) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+
+  res.status(200).json({ message: "로그아웃 성공" });
+};
+
+
+module.exports = { signup, login, logout };

@@ -1,14 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 import { Container, TextField, Button, Typography, Alert, Box, IconButton } from "@mui/material";
-import { useAuthStore } from "../store/authStore";
 import { Delete } from "@mui/icons-material";
 
 const PostEditPage = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
-  const { token } = useAuthStore();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
@@ -17,18 +15,17 @@ const PostEditPage = () => {
   const [isImageDeleted, setIsImageDeleted] = useState(false);
 
   const fetchPost = useCallback(async () => {
-    if (!postId || !token) return;
-
+    if (!postId) return;
+  
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}`);
+      const res = await api.get(`/api/posts/${postId}`);
       setTitle(res.data.title);
       setContent(res.data.content);
       setPreview(res.data.imageUrl || null);
-    } catch (err) {
-      console.error("게시글 불러오기 실패:", err);
+    } catch {
       setError("게시글을 불러오는 데 실패했습니다.");
     }
-  }, [postId, token]);
+  }, [postId]);
 
   useEffect(() => {
     fetchPost();
@@ -45,9 +42,7 @@ const PostEditPage = () => {
 
   const handleDeleteImage = async () => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/image`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/posts/${postId}/image`);
 
       setPreview(null);
       setImage(null);
@@ -75,9 +70,8 @@ const PostEditPage = () => {
         formData.append("deleteImage", "true");
       }
 
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}`, formData, {
+      await api.put(`/api/posts/${postId}`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });

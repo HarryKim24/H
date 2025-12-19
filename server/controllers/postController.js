@@ -235,9 +235,7 @@ const deletePostImage = async (req, res) => {
 const likePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
+    const userId = req.user.id;
 
     const post = await Post.findById(postId).populate("author");
     if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
@@ -247,13 +245,13 @@ const likePost = async (req, res) => {
 
     let pointsChange = 0;
 
-    if (post.dislikes.includes(userId)) {
+    if (post.dislikes.some(id => id.toString() === userId)) {
       post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
       author.points += 1;
       pointsChange += 1;
     }
 
-    if (post.likes.includes(userId)) {
+    if (post.likes.some(id => id.toString() === userId)) {
       post.likes = post.likes.filter(id => id.toString() !== userId);
       author.points = Math.max(0, author.points - 3);
       pointsChange -= 3;
@@ -266,14 +264,12 @@ const likePost = async (req, res) => {
     await Promise.all([post.save(), author.save()]);
 
     res.status(200).json({
-      message: "좋아요 업데이트 완료",
       likes: post.likes.map(id => id.toString()),
       dislikes: post.dislikes.map(id => id.toString()),
-      points: author.points,
       pointsChange,
     });
-  } catch (err) {
-    res.status(500).json({ message: "서버 오류", error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: "서버 오류", error: error.message });
   }
 };
 
@@ -309,9 +305,7 @@ const unlikePost = async (req, res) => {
 const dislikePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) return res.status(400).json({ message: "userId가 필요합니다." });
+    const userId = req.user.id;
 
     const post = await Post.findById(postId).populate("author");
     if (!post) return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
@@ -321,13 +315,13 @@ const dislikePost = async (req, res) => {
 
     let pointsChange = 0;
 
-    if (post.likes.includes(userId)) {
+    if (post.likes.some(id => id.toString() === userId)) {
       post.likes = post.likes.filter(id => id.toString() !== userId);
       author.points = Math.max(0, author.points - 3);
       pointsChange -= 3;
     }
 
-    if (post.dislikes.includes(userId)) {
+    if (post.dislikes.some(id => id.toString() === userId)) {
       post.dislikes = post.dislikes.filter(id => id.toString() !== userId);
       author.points += 1;
       pointsChange += 1;
@@ -340,14 +334,12 @@ const dislikePost = async (req, res) => {
     await Promise.all([post.save(), author.save()]);
 
     res.status(200).json({
-      message: "싫어요 업데이트 완료",
       likes: post.likes.map(id => id.toString()),
       dislikes: post.dislikes.map(id => id.toString()),
-      points: author.points,
       pointsChange,
     });
-  } catch (err) {
-    res.status(500).json({ message: "서버 오류", error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: "서버 오류", error: error.message });
   }
 };
 

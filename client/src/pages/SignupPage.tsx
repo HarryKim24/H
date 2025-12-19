@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Box, Button, Container, TextField, Typography, CircularProgress, IconButton, InputAdornment
-} from "@mui/material";
-import axios from "axios";
+} from "@mui/material"
+import api from "../api/axios";
 import { FormEvent, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -55,7 +55,7 @@ const SignupPage = () => {
     try {
       setLoading(true);
   
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/signup`, {
+      await api.post("/api/auth/signup", {
         user_id: form.userId,
         username: form.username,
         password: form.password,

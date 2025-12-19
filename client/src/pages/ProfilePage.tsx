@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FormEvent, useEffect, useReducer, useCallback, Dispatch  } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { useAuthStore } from "../store/authStore";
 import { 
   Container, TextField, Typography, Button, Box, 
@@ -75,11 +75,9 @@ const reducer = (state: StateType, action: ActionType): StateType => {
   }
 };
 
-const fetchProfile = async (token: string, dispatch: Dispatch<ActionType>) => {
+const fetchProfile = async (dispatch: Dispatch<ActionType>) => {
   try {
-    const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await api.get("/api/user/profile");
 
     dispatch({
       type: "SET_PROFILE",
@@ -89,8 +87,7 @@ const fetchProfile = async (token: string, dispatch: Dispatch<ActionType>) => {
         createdAt: new Date(res.data.createdAt).toLocaleDateString(),
       },
     });
-  } catch (err) {
-    console.error("프로필 불러오기 실패:", err);
+  } catch {
     dispatch({ type: "SET_ERROR", value: "프로필 정보를 불러오지 못했습니다." });
   }
 };
@@ -116,19 +113,15 @@ const validateProfileUpdate = (username: string, currentPassword: string, newPas
 };
 
 const ProfilePage = () => {
-  const { token, logout } = useAuthStore();
+  const { logout } = useAuthStore();
   const navigate = useNavigate();
   const theme = useTheme();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    if (!token) {
-      dispatch({ type: "SET_ERROR", value: "로그인 후 이용해 주세요." });
-      setTimeout(() => navigate("/login"), 2000);
-      return;
-    }
-    fetchProfile(token, dispatch);
-  }, [token, navigate]);
+    fetchProfile(dispatch);
+  }, [navigate]);
+
 
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
@@ -150,9 +143,7 @@ const ProfilePage = () => {
     }
   
     try {
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, updateData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.put("/api/user/profile", updateData);
   
       const { user, setUser } = useAuthStore.getState();
       if (user) {
@@ -178,8 +169,7 @@ const ProfilePage = () => {
     dispatch({ type: "SET_ERROR", value: "" });
 
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/user/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await api.delete("/api/user/profile", {
         data: { password: state.password },
       });
 
@@ -192,7 +182,7 @@ const ProfilePage = () => {
       dispatch({ type: "TOGGLE_DIALOG" });
       dispatch({ type: "RESET_PASSWORD_FIELDS" });
     }
-  }, [state.password, token, logout, navigate]);
+  }, [state.password, logout, navigate]);
 
   return (
     <Container maxWidth="xs">

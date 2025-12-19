@@ -4,18 +4,28 @@ import { useAuthStore } from "../store/authStore";
 import { useContext } from "react";
 import { ThemeContext } from "../utils/ThemeContext";
 import { Brightness4, Brightness7 } from "@mui/icons-material";
+import api from "../api/axios";
 
 const Navbar = () => {
   const { user, logout } = useAuthStore();
-  const { toggleTheme, darkMode } = useContext(ThemeContext) || { toggleTheme: () => {}, darkMode: false };
+  const { toggleTheme, darkMode } =
+    useContext(ThemeContext) || { toggleTheme: () => {}, darkMode: false };
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } finally {
+      logout();
+    }
+  };
 
   return (
     <AppBar position="static">
       <Toolbar>
-        <Typography 
-          variant="h6" 
-          component={Link} 
-          to="/" 
+        <Typography
+          variant="h6"
+          component={Link}
+          to="/"
           sx={{ flexGrow: 1, textDecoration: "none", color: "inherit" }}
         >
           H
@@ -25,31 +35,30 @@ const Navbar = () => {
           {darkMode ? <Brightness7 /> : <Brightness4 />}
         </IconButton>
 
-
         {!user ? (
           <>
-            <Typography 
-              component={Link} 
-              to="/login" 
-              sx={{ 
-                textDecoration: "none", 
-                color: "inherit", 
-                mx: 2, 
-                cursor: "pointer", 
-                "&:hover": { textDecoration: "underline" } 
+            <Typography
+              component={Link}
+              to="/login"
+              sx={{
+                textDecoration: "none",
+                color: "inherit",
+                mx: 2,
+                cursor: "pointer",
+                "&:hover": { textDecoration: "underline" },
               }}
             >
               로그인
             </Typography>
-            <Typography 
-              component={Link} 
-              to="/signup" 
-              sx={{ 
-                textDecoration: "none", 
-                color: "inherit", 
-                mx: 2, 
-                cursor: "pointer", 
-                "&:hover": { textDecoration: "underline" } 
+            <Typography
+              component={Link}
+              to="/signup"
+              sx={{
+                textDecoration: "none",
+                color: "inherit",
+                mx: 2,
+                cursor: "pointer",
+                "&:hover": { textDecoration: "underline" },
               }}
             >
               회원가입
@@ -57,27 +66,27 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Typography 
-              component={Link} 
-              to="/profile" 
-              sx={{ 
-                textDecoration: "none", 
-                color: "inherit", 
-                mx: 2, 
-                cursor: "pointer", 
-                "&:hover": { textDecoration: "underline" } 
+            <Typography
+              component={Link}
+              to="/profile"
+              sx={{
+                textDecoration: "none",
+                color: "inherit",
+                mx: 2,
+                cursor: "pointer",
+                "&:hover": { textDecoration: "underline" },
               }}
             >
               프로필
             </Typography>
-            <Typography 
-              onClick={logout} 
-              sx={{ 
-                textDecoration: "none", 
-                color: "inherit", 
-                mx: 2, 
-                cursor: "pointer", 
-                "&:hover": { textDecoration: "underline" } 
+            <Typography
+              onClick={handleLogout}
+              sx={{
+                textDecoration: "none",
+                color: "inherit",
+                mx: 2,
+                cursor: "pointer",
+                "&:hover": { textDecoration: "underline" },
               }}
             >
               로그아웃

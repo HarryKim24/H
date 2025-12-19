@@ -23,9 +23,9 @@ router.put('/:postId', authMiddleware, upload.single("image"), updatePost);
 router.delete('/:postId', authMiddleware, deletePost);
 router.delete("/:postId/image", authMiddleware, deletePostImage);
 
-router.post('/:postId/like', likePost);
-router.delete('/:postId/like', unlikePost);
-router.post('/:postId/dislike', dislikePost);
-router.delete('/:postId/dislike', undislikePost);
+router.post('/:postId/like', authMiddleware, likePost);
+router.delete('/:postId/like', authMiddleware, unlikePost);
+router.post('/:postId/dislike', authMiddleware, dislikePost);
+router.delete('/:postId/dislike', authMiddleware, undislikePost);
 
 module.exports = router;

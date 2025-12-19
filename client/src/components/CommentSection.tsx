@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { 
   Box, 
   Button, 
@@ -37,7 +37,7 @@ interface AuthorPoints {
 }
 
 const CommentSection = ({ postId }: CommentSectionProps) => {
-  const { token, user, updatePoints } = useAuthStore();
+  const { user, updatePoints } = useAuthStore();
   const [comments, setComments] = useState<Comment[]>([]);
   const [authorPoints, setAuthorPoints] = useState<AuthorPoints>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -51,9 +51,11 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   const refreshComments = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await axios.get<{ comments: Comment[]; totalComments: number }>(
-        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments?page=${currentPage}&limit=${commentsPerPage}`
+      const res = await api.get<{ comments: Comment[]; totalComments: number }>(
+        `/api/posts/${postId}/comments`,
+        { params: { page: currentPage, limit: commentsPerPage } }
       );
+
       setComments(res.data.comments);
       setTotalPages(Math.ceil(res.data.totalComments / commentsPerPage));
 
@@ -74,7 +76,7 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
     try {
       const responses = await Promise.all(
         usernames.map((username) =>
-          axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/get-username`, { params: { username } })
+          api.get("/api/user/get-username", { params: { username } })
         )
       );
 
@@ -90,14 +92,10 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };
 
   const handleAddComment = async () => {
-    if (!token || !content.trim()) return;
+    if (!content.trim()) return;
   
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments`,
-        { content },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post(`/api/posts/${postId}/comments`, { content });
   
       setContent("");
       refreshComments();
@@ -109,25 +107,22 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   
   
   const handleUpdateComment = async (commentId: string) => {
-    if (!token || !editContent.trim()) return;
-    await axios.put(
-      `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}`,
-      { content: editContent },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    if (!user || !editContent.trim()) return;
+
+    await api.put(`/api/posts/${postId}/comments/${commentId}`, {
+      content: editContent,
+    });
+
     setEditCommentId(null);
     setEditContent("");
     refreshComments();
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!token || !window.confirm("이 댓글을 삭제하시겠습니까?")) return;
+    if (!user || !window.confirm("이 댓글을 삭제하시겠습니까?")) return;
   
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.delete(`/api/posts/${postId}/comments/${commentId}`);
   
       refreshComments();
       updatePoints(-1);
@@ -137,16 +132,13 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };  
 
   const handleLike = async (commentId: string) => {
-    if (!token) {
+    if (!user) {
       alert("로그인 후 이용해 주세요.");
       return;
     }
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}/like`, 
-        {}, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post(`/api/posts/${postId}/comments/${commentId}/like`);
+
       setComments((prevComments) =>
         prevComments.map(comment =>
           comment._id === commentId
@@ -164,15 +156,13 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };
   
   const handleUnlike = async (commentId: string) => {
-    if (!token) {
+    if (!user) {
       alert("로그인 후 이용해 주세요.");
       return;
     }
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}/like`, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.delete(`/api/posts/${postId}/comments/${commentId}/like`);
+
       setComments((prevComments) =>
         prevComments.map(comment =>
           comment._id === commentId
@@ -186,16 +176,13 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };
   
   const handleDislike = async (commentId: string) => {
-    if (!token) {
+    if (!user) {
       alert("로그인 후 이용해 주세요.");
       return;
     }
     try {
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}/dislike`, 
-        {}, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post(`/api/posts/${postId}/comments/${commentId}/dislike`);
+
       setComments((prevComments) =>
         prevComments.map(comment =>
           comment._id === commentId
@@ -213,15 +200,13 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
   };
   
   const handleUndislike = async (commentId: string) => {
-    if (!token) {
+    if (!user) {
       alert("로그인 후 이용해 주세요.");
       return;
     }
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/comments/${commentId}/dislike`, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.delete(`/api/posts/${postId}/comments/${commentId}/dislike`);
+
       setComments((prevComments) =>
         prevComments.map(comment =>
           comment._id === commentId
@@ -245,16 +230,16 @@ const CommentSection = ({ postId }: CommentSectionProps) => {
           multiline
           minRows={2}
           maxRows={10}
-          label={!token ? "로그인 후 댓글 작성이 가능합니다" : "댓글을 입력하세요"}
+          label={!user ? "로그인 후 댓글 작성이 가능합니다" : "댓글을 입력하세요"}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           variant="outlined"
-          disabled={!token}
+          disabled={!user}
         />
         <Button
           variant="contained"
           onClick={handleAddComment}
-          disabled={!token}
+          disabled={!user}
           sx={{ alignSelf: 'flex-start', height: 40, mt: 1 }}
         >
           작성

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 import { 
   Container, Typography, CircularProgress, Button, Box, Divider, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, 
   useTheme,
@@ -29,7 +29,7 @@ interface Post {
 const PostDetailPage = () => {
   const { postId } = useParams();
   const navigate = useNavigate();
-  const { token, user, updatePoints } = useAuthStore();
+  const { user, updatePoints } = useAuthStore();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -41,7 +41,7 @@ const PostDetailPage = () => {
       if (!postId) return;
   
       try {
-        const res = await axios.get<Post>(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}`);
+        const res = await api.get<Post>(`/api/posts/${postId}`);
         setPost(res.data);
         fetchAuthorPoints(res.data.author.username);
       } catch (err) {
@@ -57,9 +57,10 @@ const PostDetailPage = () => {
 
   const fetchAuthorPoints = async (username: string) => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/user/get-username`, {
+      const res = await api.get("/api/user/get-username", {
         params: { username }
       });
+
       setAuthorPoints(res.data.points);
     } catch (err) {
       console.error("작성자 포인트 불러오기 실패:", err);
@@ -67,15 +68,13 @@ const PostDetailPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!token || !post || !user || String(post.author._id) !== String(user.id)) {
+    if (!post || !user || String(post.author._id) !== String(user.id)) {
       alert("삭제 권한이 없습니다.");
       return;
     }
   
     try {
-      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/posts/${post._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/posts/${post._id}`);
   
       if (user.points > 0) {
         updatePoints(-3);
@@ -97,8 +96,7 @@ const PostDetailPage = () => {
     }
   
     try {
-      const url = `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/like`;
-      const { data } = await axios.post(url, { userId: user.id });
+      const { data } = await api.post(`/api/posts/${postId}/like`);
   
       setPost((prevPost) => {
         if (!prevPost) return null;
@@ -121,8 +119,7 @@ const PostDetailPage = () => {
     }
   
     try {
-      const url = `${import.meta.env.VITE_API_BASE_URL}/api/posts/${postId}/dislike`;
-      const { data } = await axios.post(url, { userId: user.id });
+      const { data } = await api.post(`/api/posts/${postId}/dislike`);
   
       setPost((prevPost) => {
         if (!prevPost) return null;
@@ -201,7 +198,7 @@ const PostDetailPage = () => {
           </Typography>
         </Box>
 
-        {token && user && String(post.author._id) === String(user.id) && ( 
+        {user && String(post.author._id) === String(user.id) && ( 
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton color="primary" onClick={() => navigate(`/posts/${postId}/edit`)}>
               <Edit />

@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { Container, TextField, Button, Typography, Alert, Box, IconButton, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
@@ -58,15 +58,15 @@ const validatePost = (title: string, content: string) => {
 
 const PostCreatePage = () => {
   const navigate = useNavigate();
-  const { token, user, updatePoints } = useAuthStore();
+  const { user, updatePoints } = useAuthStore();
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       dispatch({ type: "SET_ERROR", message: "로그인 후 이용해 주세요." });
       setTimeout(() => navigate("/login"), 2000);
     }
-  }, [token, navigate]);
+  }, [user, navigate]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -82,7 +82,6 @@ const PostCreatePage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!token) return console.error("로그인 후 다시 시도하세요.");
 
     const validationError = validatePost(state.title, state.content);
     if (validationError) {
@@ -98,10 +97,9 @@ const PostCreatePage = () => {
       formData.append("content", state.content);
       if (state.image) formData.append("image", state.image);
 
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/posts`, formData, {
+      await api.post("/api/posts", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
         },
       });
 

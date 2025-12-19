@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
-import axios from "axios";
+import api from "../api/axios";
 
 interface User {
   id: string;
@@ -10,7 +9,6 @@ interface User {
 }
 
 interface AuthState {
-  token: string | null;
   user: User | null;
   login: (user_id: string, password: string) => Promise<boolean>;
   logout: () => void;
@@ -18,14 +16,12 @@ interface AuthState {
   setUser: (user: User) => void;
 }
 
-
 export const useAuthStore = create<AuthState>((set) => ({
-  token: localStorage.getItem("token"),
   user: JSON.parse(localStorage.getItem("user") || "null"),
 
   login: async (user_id, password) => {
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+      const res = await api.post("/api/auth/login", {
         user_id,
         password,
       });
@@ -35,27 +31,27 @@ export const useAuthStore = create<AuthState>((set) => ({
         points: res.data.user.points || 0,
       };
 
-      localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(userData));
-      set({ token: res.data.token, user: userData });
+      set({ user: userData });
 
       return true;
-    } catch (error: any) {
-      console.error("로그인 실패:", error.response?.data?.message);
+    } catch {
       return false;
     }
   },
 
   logout: () => {
-    localStorage.removeItem("token");
     localStorage.removeItem("user");
-    set({ token: null, user: null });
+    set({ user: null });
   },
 
   updatePoints: (amount) => {
     set((state) => {
       if (!state.user) return state;
-      const updatedUser = { ...state.user, points: Math.max(0, state.user.points + amount) };
+      const updatedUser = {
+        ...state.user,
+        points: Math.max(0, state.user.points + amount),
+      };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       return { user: updatedUser };
     });
