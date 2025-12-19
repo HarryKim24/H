@@ -1,7 +1,8 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { jwtSecret, jwtExpiresIn  } = require('../config/jwt');
+const { jwtSecret, jwtExpiresIn } = require('../config/jwt');
+
 
 const signup = async (req, res) => {
   try {
@@ -11,22 +12,32 @@ const signup = async (req, res) => {
       return res.status(400).json({ message: "모든 필드를 입력해주세요." });
     }
 
-    const existingUser = await User.findOne({ $or: [{ user_id }, { username }] });
+    const existingUser = await User.findOne({
+      $or: [{ user_id }, { username }]
+    });
+
     if (existingUser) {
       return res.status(400).json({
-        message: existingUser.user_id === user_id
-          ? "이미 사용 중인 아이디입니다."
-          : "이미 사용 중인 닉네임입니다."
+        message:
+          existingUser.user_id === user_id
+            ? "이미 사용 중인 아이디입니다."
+            : "이미 사용 중인 닉네임입니다.",
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ user_id, username, password: hashedPassword });
+
+    const newUser = new User({
+      user_id,
+      username,
+      password: hashedPassword,
+    });
 
     await newUser.save();
 
     res.status(201).json({ message: "회원가입 성공" });
   } catch (error) {
+    console.error("회원가입 오류:", error);
     res.status(500).json({ message: "서버 오류 발생" });
   }
 };
@@ -52,13 +63,13 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, user_id: user.user_id },
       jwtSecret,
-      { expiresIn: jwtExpiresIn }
+      { expiresIn: jwtExpiresIn } 
     );
 
     res.cookie("accessToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,       
+      sameSite: "none",     
       maxAge: 60 * 60 * 1000
     });
 
@@ -67,10 +78,11 @@ const login = async (req, res) => {
       user: {
         id: user._id,
         user_id: user.user_id,
-        username: user.username
-      }
+        username: user.username,
+      },
     });
   } catch (error) {
+    console.error("로그인 오류:", error);
     res.status(500).json({ message: "서버 오류 발생" });
   }
 };
@@ -78,12 +90,15 @@ const login = async (req, res) => {
 const logout = (req, res) => {
   res.clearCookie("accessToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: true,
+    sameSite: "none",
   });
 
   res.status(200).json({ message: "로그아웃 성공" });
 };
 
-
-module.exports = { signup, login, logout };
+module.exports = {
+  signup,
+  login,
+  logout,
+};
