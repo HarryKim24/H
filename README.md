@@ -88,4 +88,3 @@ erDiagram
 - **백엔드**
   - Render (Node 서버 배포)
   - 배포 URL: [https://h-6yo4.onrender.com](https://h-6yo4.onrender.com)
-  - **참고**: Render 무료 요금제의 경우 일정 시간 동안 사용자가 접속하지 않으면 서버가 슬립 모드에 들어갑니다.
